@@ -10,7 +10,7 @@ const OPTIONS: { role: Role; title: string; hint: string }[] = [
 ];
 
 /** Choix du profil à l'inscription : détermine l'interface affichée ensuite. */
-export function RoleSelector({ value, onChange }: { value: Role; onChange: (r: Role) => void }) {
+export function RoleSelector({ value, onChange }: Readonly<{ value: Role; onChange: (r: Role) => void }>) {
   return (
     <View style={{ gap: 12 }}>
       {OPTIONS.map((o) => {
