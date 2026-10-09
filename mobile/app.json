@@ -1,0 +1,11 @@
+{
+  "expo": {
+    "name": "SeniorCare",
+    "slug": "seniorcare",
+    "version": "0.1.0",
+    "scheme": "seniorcare",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "plugins": ["expo-router", "expo-secure-store"]
+  }
+}

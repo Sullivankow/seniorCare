@@ -1,0 +1,6 @@
+{
+  "folders": [
+    { "name": "backend (NestJS)", "path": "backend" },
+    { "name": "mobile (Expo)", "path": "mobile" }
+  ]
+}
