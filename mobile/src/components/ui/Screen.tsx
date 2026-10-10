@@ -9,12 +9,13 @@ interface Props {
   refreshControl?: React.ReactElement<RefreshControlProps>;
   /** Contenu non scrollable (écrans courts, centrés). */
   fixed?: boolean;
+  backgroundColor?: string;
 }
 
 /** Conteneur d'écran standard : zone sûre, fond, marges, scroll. */
-export function Screen({ children, refreshControl, fixed }: Props) {
+export function Screen({ children, refreshControl, fixed, backgroundColor }: Readonly<Props>) {
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView style={[styles.safe, backgroundColor && { backgroundColor }]}>
       {fixed ? (
         <View style={styles.content}>{children}</View>
       ) : (

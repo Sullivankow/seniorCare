@@ -2,9 +2,10 @@ import React, { useCallback, useState } from 'react';
 import { Alert as NativeAlert, RefreshControl } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import { Screen, AppText, Button, Card, ErrorText } from '../../src/components/ui';
-import { CheckInButton } from '../../src/features/senior/CheckInButton';
 import { SosButton } from '../../src/features/senior/SosButton';
 import { InviteCodeCard } from '../../src/features/senior/InviteCodeCard';
+import { SeniorActionButton } from '../../src/features/senior/SeniorActionButton';
+import { SeniorStatusPanel } from '../../src/features/senior/SeniorStatusPanel';
 import { alertsApi, checkinsApi } from '../../src/api/endpoints';
 import { useAuth } from '../../src/context/AuthContext';
 import { useRealtime } from '../../src/hooks/useRealtime';
@@ -14,7 +15,7 @@ import { timeAgo } from '../../src/utils/time';
 import { Alert, CheckIn } from '../../src/types';
 import { colors } from '../../src/theme';
 
-/** Interface SENIOR : volontairement minimaliste (1 action principale + 1 urgence). */
+/** Tableau de bord senior : actions principales et urgence accessibles en un toucher. */
 export default function SeniorHome() {
   const { user, signOut } = useAuth();
   const [last, setLast] = useState<CheckIn | null>(null);
@@ -33,7 +34,7 @@ export default function SeniorHome() {
     }
   }, []);
 
-  useFocusEffect(useCallback(() => { load(); }, [load]));
+  useFocusEffect(useCallback(() => { void load(); }, [load]));
 
   // Si un proche clôture l'alerte, l'écran se met à jour tout seul
   useRealtime({ [RealtimeEvents.ALERT_RESOLVED]: () => load() });
@@ -60,14 +61,18 @@ export default function SeniorHome() {
 
   const firstName = user?.fullName.split(' ')[0];
   const error = loadError ?? sendCheckIn.error ?? sendNotGreat.error ?? triggerSos.error ?? cancelSos.error;
+  const showUnavailableAction = (action: string) =>
+    NativeAlert.alert(action, 'Cette fonction sera disponible lorsque les coordonnées de votre proche seront configurées.');
 
   return (
     <Screen
+      backgroundColor={colors.seniorBg}
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={async () => { setRefreshing(true); await load(); setRefreshing(false); }} />
       }
     >
-      <AppText variant="title">Bonjour {firstName}</AppText>
+      <SeniorStatusPanel />
+      <AppText variant="title" color={colors.white}>Bonjour {firstName}</AppText>
 
       {activeAlert ? (
         <Card tone="danger">
@@ -77,8 +82,32 @@ export default function SeniorHome() {
         </Card>
       ) : (
         <>
-          <CheckInButton onPress={() => sendCheckIn.run()} loading={sendCheckIn.loading} doneToday={!!last && last.status === 'OK'} />
-          <AppText center>
+          <SeniorActionButton
+            title="JE VAIS BIEN"
+            subtitle={last?.status === 'OK' ? 'Appuyez pour confirmer à nouveau' : 'Appuyez pour rassurer la famille'}
+            icon="☺"
+            trailing="✓"
+            color={colors.seniorOk}
+            onPress={() => sendCheckIn.run()}
+            loading={sendCheckIn.loading}
+          />
+          <SeniorActionButton
+            title={`Appeler ${firstName ?? 'mon proche'}`}
+            subtitle="Appel direct"
+            icon="☎"
+            trailing="›"
+            color={colors.seniorBlue}
+            onPress={() => showUnavailableAction('Appel direct')}
+          />
+          <SeniorActionButton
+            title="Message vocal"
+            subtitle="Parler sans écrire"
+            icon="♫"
+            trailing="▶"
+            color={colors.seniorPurple}
+            onPress={() => showUnavailableAction('Message vocal')}
+          />
+          <AppText center color={colors.white}>
             {last ? `Dernier message envoyé ${timeAgo(last.createdAt)}` : "Appuyez pour dire à votre famille que tout va bien."}
           </AppText>
           <Button variant="warning" label="Je ne suis pas très en forme" onPress={() => sendNotGreat.run()} loading={sendNotGreat.loading} />
