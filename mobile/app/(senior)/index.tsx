@@ -107,6 +107,14 @@ export default function SeniorHome() {
             color={colors.seniorPurple}
             onPress={() => showUnavailableAction('Message vocal')}
           />
+          <SeniorActionButton
+            title="Photo de famille"
+            subtitle="Voir les photos de vos proches"
+            icon="▧"
+            trailing="›"
+            color={colors.seniorOrange}
+            onPress={() => NativeAlert.alert('Photo de famille', 'Aucune photo n’est disponible pour le moment.')}
+          />
           <AppText center color={colors.white}>
             {last ? `Dernier message envoyé ${timeAgo(last.createdAt)}` : "Appuyez pour dire à votre famille que tout va bien."}
           </AppText>

@@ -22,6 +22,7 @@ export const colors = {
   seniorOk: "#0B956D",
   seniorBlue: "#2862E8",
   seniorPurple: "#922CE0",
+  seniorOrange: "#E88718",
 };
 
 export const spacing = { xs: 4, sm: 8, md: 16, lg: 24, xl: 32 };
