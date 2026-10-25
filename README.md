@@ -7,7 +7,7 @@ Application de veille bienveillante entre des seniors et leur famille.
 
 | Partie     | Technologies                                                                       |
 | ---------- | ---------------------------------------------------------------------------------- |
-| `mobile/`  | React Native · Expo SDK 57 · Expo Go · expo-router · TypeScript · Socket.IO client |
+| `mobile/`  | React Native · Expo SDK 58 · Expo Go · expo-router · TypeScript · Socket.IO client |
 | `backend/` | NestJS 11 · TypeORM · PostgreSQL · JWT · Swagger · Socket.IO                       |
 
 ## État actuel du projet
@@ -45,7 +45,7 @@ Application de veille bienveillante entre des seniors et leur famille.
 
 - Node.js 20 ou plus récent
 - PostgreSQL lancé en local (utilisateur `postgres`)
-- L'app **Expo Go** (version SDK 57) sur votre téléphone
+- L'app **Expo Go** à jour sur votre téléphone (compatible SDK 58)
 - Le PC et le téléphone sur le **même Wi-Fi**
 
 ### Étape 1 : la base de données
