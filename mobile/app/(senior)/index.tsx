@@ -3,7 +3,6 @@ import { Alert as NativeAlert, RefreshControl } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import { Screen, AppText, Button, Card, ErrorText } from '../../src/components/ui';
 import { SosButton } from '../../src/features/senior/SosButton';
-import { InviteCodeCard } from '../../src/features/senior/InviteCodeCard';
 import { SeniorActionButton } from '../../src/features/senior/SeniorActionButton';
 import { SeniorStatusPanel } from '../../src/features/senior/SeniorStatusPanel';
 import { alertsApi, checkinsApi } from '../../src/api/endpoints';
@@ -17,7 +16,7 @@ import { colors } from '../../src/theme';
 
 /** Tableau de bord senior : actions principales et urgence accessibles en un toucher. */
 export default function SeniorHome() {
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
   const [last, setLast] = useState<CheckIn | null>(null);
   const [activeAlert, setActiveAlert] = useState<Alert | null>(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -52,12 +51,6 @@ export default function SeniorHome() {
     await alertsApi.resolve(id);
     setActiveAlert(null);
   });
-
-  const confirmSignOut = () =>
-    NativeAlert.alert('Se déconnecter ?', 'Vous ne pourrez plus prévenir votre famille tant que vous ne vous reconnectez pas.', [
-      { text: 'Annuler', style: 'cancel' },
-      { text: 'Se déconnecter', style: 'destructive', onPress: signOut },
-    ]);
 
   const firstName = user?.fullName.split(' ')[0];
   const error = loadError ?? sendCheckIn.error ?? sendNotGreat.error ?? triggerSos.error ?? cancelSos.error;
@@ -124,8 +117,6 @@ export default function SeniorHome() {
       )}
 
       <ErrorText message={error} />
-      <InviteCodeCard code={user?.inviteCode} />
-      <Button variant="ghost" label="Se déconnecter" onPress={confirmSignOut} />
     </Screen>
   );
 }

@@ -3,11 +3,11 @@ import { StyleProp, StyleSheet, Text, TextStyle } from 'react-native';
 import { colors, font } from '../../theme';
 
 interface Props {
-  children: React.ReactNode;
-  variant?: 'body' | 'small' | 'title' | 'huge';
-  color?: string;
-  style?: StyleProp<TextStyle>;
-  center?: boolean;
+  readonly children: React.ReactNode;
+  readonly variant?: 'body' | 'small' | 'title' | 'huge';
+  readonly color?: string;
+  readonly style?: StyleProp<TextStyle>;
+  readonly center?: boolean;
 }
 
 /** Texte avec tailles harmonisées (jamais de fontSize en dur dans les écrans). */
