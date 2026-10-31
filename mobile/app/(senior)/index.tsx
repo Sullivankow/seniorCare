@@ -14,6 +14,7 @@ import { RealtimeEvents } from '../../src/api/events';
 import { timeAgo } from '../../src/utils/time';
 import { Alert, CheckIn } from '../../src/types';
 import { colors, spacing } from '../../src/theme';
+import { getErrorMessage } from '../../src/utils/errorMessage';
 
 /** Tableau de bord senior : actions principales et urgence accessibles en un toucher. */
 export default function SeniorHome() {
@@ -30,8 +31,8 @@ export default function SeniorHome() {
       setLast(c);
       setActiveAlert(a);
       setLoadError(null);
-    } catch (e: any) {
-      setLoadError(e.message);
+    } catch (error: unknown) {
+      setLoadError(getErrorMessage(error));
     }
   }, []);
 

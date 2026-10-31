@@ -41,4 +41,7 @@ async function bootstrap() {
   console.log(`API prête      : http://localhost:${port}/api`);
   console.log(`Swagger        : http://localhost:${port}/docs`);
 }
-void bootstrap();
+void bootstrap().catch((error: unknown) => {
+  console.error("Échec du démarrage de l'API.", error);
+  process.exitCode = 1;
+});

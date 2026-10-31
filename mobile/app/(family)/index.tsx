@@ -9,6 +9,7 @@ import { useRealtime } from '../../src/hooks/useRealtime';
 import { RealtimeEvents } from '../../src/api/events';
 import { SeniorSummary } from '../../src/types';
 import { colors, spacing } from '../../src/theme';
+import { getErrorMessage } from '../../src/utils/errorMessage';
 
 /** Tableau de bord FAMILLE : l'état de chaque proche, mis à jour en temps réel. */
 export default function FamilyHome() {
@@ -22,8 +23,8 @@ export default function FamilyHome() {
     try {
       setItems(await familyApi.listSeniors());
       setError(null);
-    } catch (e: any) {
-      setError(e.message);
+    } catch (error: unknown) {
+      setError(getErrorMessage(error));
     }
   }, []);
 
@@ -43,8 +44,8 @@ export default function FamilyHome() {
     try {
       await alertsApi.resolve(alertId);
       void load();
-    } catch (e: any) {
-      setError(e.message);
+    } catch (error: unknown) {
+      setError(getErrorMessage(error));
     }
   };
 

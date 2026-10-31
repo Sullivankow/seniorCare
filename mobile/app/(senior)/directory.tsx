@@ -6,6 +6,7 @@ import { AppText, Button, Card, ErrorText, Input, Screen } from '../../src/compo
 import { directoryApi } from '../../src/api/endpoints';
 import { DirectoryContact } from '../../src/types';
 import { colors, spacing } from '../../src/theme';
+import { getErrorMessage } from '../../src/utils/errorMessage';
 
 export default function SeniorDirectory() {
     const [contacts, setContacts] = useState<DirectoryContact[] | null>(null);
@@ -22,8 +23,8 @@ export default function SeniorDirectory() {
         try {
             setContacts(await directoryApi.listContacts());
             setError(null);
-        } catch (e: any) {
-            setError(e.message);
+        } catch (error: unknown) {
+            setError(getErrorMessage(error));
         }
     }, []);
 
@@ -51,8 +52,8 @@ export default function SeniorDirectory() {
             setEmail('');
             setShowForm(false);
             await load();
-        } catch (e: any) {
-            setFormError(e.message);
+        } catch (error: unknown) {
+            setFormError(getErrorMessage(error));
         } finally {
             setSaving(false);
         }

@@ -1,10 +1,13 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useState } from "react";
+import { getErrorMessage } from "../utils/errorMessage";
 
 /**
  * Enveloppe une action asynchrone avec état `loading` + `error`.
  * Évite de répéter try/catch/finally dans chaque écran.
  */
-export function useAsyncAction<Args extends any[], R>(action: (...args: Args) => Promise<R>) {
+export function useAsyncAction<Args extends any[], R>(
+  action: (...args: Args) => Promise<R>,
+) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -14,8 +17,8 @@ export function useAsyncAction<Args extends any[], R>(action: (...args: Args) =>
       setError(null);
       try {
         return await action(...args);
-      } catch (e: any) {
-        setError(e?.message ?? 'Une erreur est survenue.');
+      } catch (error: unknown) {
+        setError(getErrorMessage(error));
         return undefined;
       } finally {
         setLoading(false);

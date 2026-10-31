@@ -7,6 +7,7 @@ import { RealtimeEvents } from '../../../src/api/events';
 import { formatDateTime } from '../../../src/utils/time';
 import { Alert, CheckIn } from '../../../src/types';
 import { colors } from '../../../src/theme';
+import { getErrorMessage } from '../../../src/utils/errorMessage';
 
 /** Une ligne de la chronologie : pointage ou alerte, triés par date. */
 type Entry =
@@ -27,8 +28,8 @@ export default function SeniorHistoryScreen() {
       ].sort((x, y) => (x.at < y.at ? 1 : -1));
       setEntries(merged);
       setError(null);
-    } catch (e: any) {
-      setError(e.message);
+    } catch (error: unknown) {
+      setError(getErrorMessage(error));
     }
   }, [id]);
 
