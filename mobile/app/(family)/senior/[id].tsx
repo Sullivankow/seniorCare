@@ -33,11 +33,11 @@ export default function SeniorHistoryScreen() {
     }
   }, [id]);
 
-  useFocusEffect(useCallback(() => { load(); }, [load]));
+  useFocusEffect(useCallback(() => { void load(); }, [load]));
   useRealtime({
-    [RealtimeEvents.CHECKIN_CREATED]: () => load(),
-    [RealtimeEvents.ALERT_CREATED]: () => load(),
-    [RealtimeEvents.ALERT_RESOLVED]: () => load(),
+    [RealtimeEvents.CHECKIN_CREATED]: () => { void load(); },
+    [RealtimeEvents.ALERT_CREATED]: () => { void load(); },
+    [RealtimeEvents.ALERT_RESOLVED]: () => { void load(); },
   });
 
   return (
