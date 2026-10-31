@@ -1,7 +1,7 @@
 /** Types partagés : miroir des réponses de l'API NestJS. */
-export type Role = 'SENIOR' | 'FAMILY';
-export type CheckInStatus = 'OK' | 'NOT_GREAT';
-export type AlertStatus = 'ACTIVE' | 'RESOLVED';
+export type Role = "SENIOR" | "FAMILY";
+export type CheckInStatus = "OK" | "NOT_GREAT";
+export type AlertStatus = "ACTIVE" | "RESOLVED";
 
 export interface User {
   id: string;
@@ -10,6 +10,12 @@ export interface User {
   role: Role;
   /** Présent uniquement pour les seniors : code à donner à la famille. */
   inviteCode?: string | null;
+}
+
+export interface DirectoryContact {
+  id: string;
+  fullName: string;
+  email: string;
 }
 
 export interface AuthResponse {

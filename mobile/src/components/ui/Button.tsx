@@ -6,11 +6,11 @@ import { AppText } from './AppText';
 type Variant = 'primary' | 'success' | 'warning' | 'danger' | 'ghost';
 
 interface Props {
-  label: string;
-  onPress: () => void;
-  variant?: Variant;
-  loading?: boolean;
-  disabled?: boolean;
+  readonly label: string;
+  readonly onPress: () => void;
+  readonly variant?: Variant;
+  readonly loading?: boolean;
+  readonly disabled?: boolean;
 }
 
 const palette: Record<Variant, { bg: string; fg: string; border?: string }> = {
@@ -30,10 +30,13 @@ export function Button({ label, onPress, variant = 'primary', loading, disabled 
       accessibilityLabel={label}
       onPress={onPress}
       disabled={disabled || loading}
-      style={({ pressed }) => [
-        styles.base,
-        { backgroundColor: p.bg, borderColor: p.border ?? p.bg, opacity: disabled ? 0.5 : pressed ? 0.85 : 1 },
-      ]}
+      style={({ pressed }) => {
+        let opacity = 1;
+        if (disabled) opacity = 0.5;
+        else if (pressed) opacity = 0.85;
+
+        return [styles.base, { backgroundColor: p.bg, borderColor: p.border ?? p.bg, opacity }];
+      }}
     >
       {loading ? (
         <ActivityIndicator color={p.fg} />

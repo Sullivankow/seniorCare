@@ -1,8 +1,13 @@
-import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { SeniorLink } from './senior-link.entity';
-import { UsersService } from '../users/users.service';
+import {
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
+import { SeniorLink } from "./senior-link.entity";
+import { UsersService } from "../users/users.service";
 
 @Injectable()
 export class LinksService {
@@ -16,7 +21,7 @@ export class LinksService {
     const senior = await this.users.findByInviteCode(inviteCode.trim());
     if (!senior) throw new NotFoundException("Code d'invitation introuvable.");
     if (await this.repo.exist({ where: { familyId, seniorId: senior.id } })) {
-      throw new ConflictException('Vous suivez déjà cette personne.');
+      throw new ConflictException("Vous suivez déjà cette personne.");
     }
     await this.repo.save(this.repo.create({ familyId, seniorId: senior.id }));
     return senior;
@@ -30,6 +35,20 @@ export class LinksService {
   async getFamilyIdsForSenior(seniorId: string): Promise<string[]> {
     const links = await this.repo.find({ where: { seniorId } });
     return links.map((l) => l.familyId);
+  }
+
+  async getFamilyContactsForSenior(seniorId: string) {
+    const familyIds = await this.getFamilyIdsForSenior(seniorId);
+    const users = await Promise.all(
+      familyIds.map((id) => this.users.findById(id)),
+    );
+    return users
+      .flatMap((user) =>
+        user
+          ? [{ id: user.id, fullName: user.fullName, email: user.email }]
+          : [],
+      )
+      .sort((left, right) => left.fullName.localeCompare(right.fullName));
   }
 
   isLinked(familyId: string, seniorId: string) {

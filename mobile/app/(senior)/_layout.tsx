@@ -1,5 +1,6 @@
 import React from 'react';
 import { Redirect, Tabs } from 'expo-router';
+import { ContactRound, House, UserRound } from 'lucide-react-native';
 import { useAuth } from '../../src/context/AuthContext';
 import { colors, font } from '../../src/theme';
 
@@ -24,8 +25,9 @@ export default function SeniorLayout() {
         },
       }}
     >
-      <Tabs.Screen name="index" options={{ title: 'Accueil' }} />
-      <Tabs.Screen name="profile" options={{ title: 'Profil' }} />
+      <Tabs.Screen name="index" options={{ title: 'Accueil', tabBarIcon: ({ color, size }) => <House color={color} size={size} /> }} />
+      <Tabs.Screen name="directory" options={{ title: 'Répertoire', tabBarIcon: ({ color, size }) => <ContactRound color={color} size={size} /> }} />
+      <Tabs.Screen name="profile" options={{ title: 'Profil', tabBarIcon: ({ color, size }) => <UserRound color={color} size={size} /> }} />
     </Tabs>
   );
 }
