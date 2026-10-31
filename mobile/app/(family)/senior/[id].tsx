@@ -1,13 +1,14 @@
 import React, { useCallback, useState } from 'react';
 import { Stack, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { Screen, AppText, Card, ErrorText } from '../../../src/components/ui';
-import { familyApi } from '../../../src/api/endpoints';
+import { familyApi, voiceMessagesApi } from '../../../src/api/endpoints';
 import { useRealtime } from '../../../src/hooks/useRealtime';
 import { RealtimeEvents } from '../../../src/api/events';
 import { formatDateTime } from '../../../src/utils/time';
-import { Alert, CheckIn } from '../../../src/types';
+import { Alert, CheckIn, VoiceMessage } from '../../../src/types';
 import { colors } from '../../../src/theme';
 import { getErrorMessage } from '../../../src/utils/errorMessage';
+import { VoiceMessageList } from '../../../src/features/family/VoiceMessageList';
 
 /** Une ligne de la chronologie : pointage ou alerte, triés par date. */
 type Entry =
@@ -17,16 +18,22 @@ type Entry =
 export default function SeniorHistoryScreen() {
   const { id, name } = useLocalSearchParams<{ id: string; name?: string }>();
   const [entries, setEntries] = useState<Entry[]>([]);
+  const [voiceMessages, setVoiceMessages] = useState<VoiceMessage[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     try {
-      const [checkins, alerts] = await Promise.all([familyApi.checkins(id), familyApi.alerts(id)]);
+      const [checkins, alerts, messages] = await Promise.all([
+        familyApi.checkins(id),
+        familyApi.alerts(id),
+        voiceMessagesApi.listForFamily(id),
+      ]);
       const merged: Entry[] = [
         ...checkins.map((c): Entry => ({ kind: 'checkin', id: c.id, at: c.createdAt, data: c })),
         ...alerts.map((a): Entry => ({ kind: 'alert', id: a.id, at: a.createdAt, data: a })),
       ].sort((x, y) => (x.at < y.at ? 1 : -1));
       setEntries(merged);
+      setVoiceMessages(messages);
       setError(null);
     } catch (error: unknown) {
       setError(getErrorMessage(error));
@@ -38,13 +45,14 @@ export default function SeniorHistoryScreen() {
     [RealtimeEvents.CHECKIN_CREATED]: () => { void load(); },
     [RealtimeEvents.ALERT_CREATED]: () => { void load(); },
     [RealtimeEvents.ALERT_RESOLVED]: () => { void load(); },
+    [RealtimeEvents.VOICE_MESSAGE_CREATED]: () => { void load(); },
   });
 
   return (
     <Screen>
       <Stack.Screen options={{ title: name ? `Historique de ${name}` : 'Historique' }} />
       <ErrorText message={error} />
-      {entries.length === 0 && <AppText>Aucun évènement pour l'instant.</AppText>}
+      {entries.length === 0 && voiceMessages.length === 0 && <AppText>Aucun évènement pour l'instant.</AppText>}
 
       {entries.map((e) =>
         e.kind === 'alert' ? (
@@ -61,6 +69,7 @@ export default function SeniorHistoryScreen() {
           </Card>
         ),
       )}
+      <VoiceMessageList messages={voiceMessages} />
     </Screen>
   );
 }

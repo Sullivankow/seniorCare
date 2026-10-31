@@ -6,6 +6,7 @@ import { Screen, AppText, Button, Card, ErrorText } from '../../src/components/u
 import { SosButton } from '../../src/features/senior/SosButton';
 import { SeniorActionButton } from '../../src/features/senior/SeniorActionButton';
 import { SeniorStatusPanel } from '../../src/features/senior/SeniorStatusPanel';
+import { VoiceMessageRecorder } from '../../src/features/senior/VoiceMessageRecorder';
 import { alertsApi, checkinsApi } from '../../src/api/endpoints';
 import { useAuth } from '../../src/context/AuthContext';
 import { useRealtime } from '../../src/hooks/useRealtime';
@@ -24,6 +25,7 @@ export default function SeniorHome() {
   const [activeAlert, setActiveAlert] = useState<Alert | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [voiceRecorderVisible, setVoiceRecorderVisible] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -93,7 +95,7 @@ export default function SeniorHome() {
       icon: <Mic size={28} color={colors.white} strokeWidth={2.2} />,
       trailing: <Play size={20} color={colors.white} strokeWidth={2.4} />,
       color: colors.seniorPurple,
-      onPress: () => showUnavailableAction('Message vocal'),
+      onPress: () => setVoiceRecorderVisible(true),
     },
     {
       key: 'photos',
@@ -110,6 +112,7 @@ export default function SeniorHome() {
   );
 
   return (
+    <>
     <Screen
       backgroundColor={colors.seniorBg}
       refreshControl={
@@ -148,6 +151,12 @@ export default function SeniorHome() {
 
       <ErrorText message={error} />
     </Screen>
+    <VoiceMessageRecorder
+      visible={voiceRecorderVisible}
+      onClose={() => setVoiceRecorderVisible(false)}
+      onMessageSent={() => { void load(); }}
+    />
+    </>
   );
 }
 

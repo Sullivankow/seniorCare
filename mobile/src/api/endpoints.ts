@@ -1,4 +1,4 @@
-import { request } from "./client";
+import { request, uploadFile } from "./client";
 import {
   Alert,
   AuthResponse,
@@ -7,6 +7,7 @@ import {
   DirectoryContact,
   Role,
   SeniorSummary,
+  VoiceMessage,
 } from "../types";
 
 /** Un objet par domaine : facile à retrouver, facile à étendre. */
@@ -39,6 +40,21 @@ export const directoryApi = {
   listContacts: () => request<DirectoryContact[]>("GET", "/links/me/contacts"),
   createContact: (data: { fullName: string; phone: string; email?: string }) =>
     request<DirectoryContact>("POST", "/links/me/contacts", data),
+};
+
+export const voiceMessagesApi = {
+  upload: (
+    file: { uri: string; name: string; type: string },
+    durationSeconds: number,
+  ) =>
+    uploadFile<VoiceMessage>("/voice-messages", file, {
+      durationSeconds: String(durationSeconds),
+    }),
+  listForFamily: (seniorId: string) =>
+    request<VoiceMessage[]>(
+      "GET",
+      `/family/seniors/${seniorId}/voice-messages`,
+    ),
 };
 
 /** Côté FAMILLE */

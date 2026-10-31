@@ -19,6 +19,15 @@ export interface DirectoryContact {
   phone: string | null;
 }
 
+export interface VoiceMessage {
+  id: string;
+  seniorId: string;
+  mimeType: string;
+  durationSeconds: number;
+  fileSizeBytes: number;
+  createdAt: string;
+}
+
 export interface AuthResponse {
   accessToken: string;
   user: User;

@@ -81,6 +81,12 @@ Scannez le QR code avec Expo Go. L'app **détecte toute seule l'IP de votre PC**
 
 > Si le téléphone n'arrive pas à joindre l'API : autorisez le port **3000** dans le pare-feu Windows/macOS, ou forcez l'adresse dans `mobile/.env` : `EXPO_PUBLIC_API_URL=http://IP_DE_VOTRE_PC:3000`.
 
+### Messages vocaux
+
+Le senior peut enregistrer un message de 60 secondes maximum. L'API limite les fichiers à 5 Mo et ne les sert qu'après vérification du JWT et du lien famille-senior. Les familles connectées reçoivent l'événement en temps réel ; les notifications push lorsque l'app est fermée ne sont pas incluses.
+
+En développement, `VOICE_STORAGE_DRIVER=local` stocke les fichiers dans `backend/uploads/voice-messages/`. Pour plusieurs instances backend, utilisez un stockage objet partagé avec `VOICE_STORAGE_DRIVER=s3` et configurez les variables `VOICE_S3_*` de `backend/.env.example`. Avec `DB_SYNCHRONIZE=false`, exécutez `backend/sql/create-voice-messages.sql` une fois.
+
 ### Tester le scénario complet
 
 1. Sur un premier appareil (ou l'émulateur) : **créer un compte « senior »** → un **code à 6 caractères** s'affiche.
