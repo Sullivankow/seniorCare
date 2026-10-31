@@ -15,7 +15,8 @@ export interface User {
 export interface DirectoryContact {
   id: string;
   fullName: string;
-  email: string;
+  email: string | null;
+  phone: string | null;
 }
 
 export interface AuthResponse {

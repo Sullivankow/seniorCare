@@ -2,7 +2,7 @@ import React, { useCallback, useState } from 'react';
 import { ActivityIndicator, Alert as NativeAlert, Linking, RefreshControl, StyleSheet, View } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import { ContactRound } from 'lucide-react-native';
-import { AppText, Button, Card, ErrorText, Screen } from '../../src/components/ui';
+import { AppText, Button, Card, ErrorText, Input, Screen } from '../../src/components/ui';
 import { directoryApi } from '../../src/api/endpoints';
 import { DirectoryContact } from '../../src/types';
 import { colors, spacing } from '../../src/theme';
@@ -11,6 +11,12 @@ export default function SeniorDirectory() {
     const [contacts, setContacts] = useState<DirectoryContact[] | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [refreshing, setRefreshing] = useState(false);
+    const [showForm, setShowForm] = useState(false);
+    const [fullName, setFullName] = useState('');
+    const [phone, setPhone] = useState('');
+    const [email, setEmail] = useState('');
+    const [formError, setFormError] = useState<string | null>(null);
+    const [saving, setSaving] = useState(false);
 
     const load = useCallback(async () => {
         try {
@@ -23,11 +29,32 @@ export default function SeniorDirectory() {
 
     useFocusEffect(useCallback(() => { void load(); }, [load]));
 
-    const emailContact = async (email: string) => {
+    const openContact = async (url: string) => {
         try {
-            await Linking.openURL(`mailto:${email}`);
+            await Linking.openURL(url);
         } catch {
-            NativeAlert.alert('Messagerie indisponible', 'Impossible d’ouvrir une application de messagerie sur cet appareil.');
+            NativeAlert.alert('Action indisponible', 'Aucune application compatible n’est disponible sur cet appareil.');
+        }
+    };
+
+    const addContact = async () => {
+        setSaving(true);
+        setFormError(null);
+        try {
+            await directoryApi.createContact({
+                fullName: fullName.trim(),
+                phone: phone.trim(),
+                ...(email.trim() ? { email: email.trim() } : {}),
+            });
+            setFullName('');
+            setPhone('');
+            setEmail('');
+            setShowForm(false);
+            await load();
+        } catch (e: any) {
+            setFormError(e.message);
+        } finally {
+            setSaving(false);
         }
     };
 
@@ -40,14 +67,31 @@ export default function SeniorDirectory() {
         >
             <AppText variant="small" color={colors.seniorOk}>VOS CONTACTS</AppText>
             <AppText variant="title" color={colors.white}>Répertoire</AppText>
-            <AppText color={colors.white}>Les proches reliés à votre compte.</AppText>
+            <AppText color={colors.white}>Vos proches et les personnes que vous souhaitez joindre.</AppText>
             <ErrorText message={error} />
+
+            <Button
+                label={showForm ? 'Fermer le formulaire' : 'Ajouter une personne'}
+                variant={showForm ? 'ghost' : 'success'}
+                onPress={() => { setShowForm(!showForm); setFormError(null); }}
+            />
+
+            {showForm && (
+                <Card>
+                    <AppText variant="title">Nouveau contact</AppText>
+                    <Input label="Nom" value={fullName} onChangeText={setFullName} autoCapitalize="words" maxLength={100} />
+                    <Input label="Téléphone" value={phone} onChangeText={setPhone} keyboardType="phone-pad" maxLength={30} />
+                    <Input label="E-mail (facultatif)" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" maxLength={255} />
+                    <ErrorText message={formError} />
+                    <Button label="Enregistrer le contact" onPress={() => { void addContact(); }} loading={saving} disabled={!fullName.trim() || !phone.trim()} />
+                </Card>
+            )}
 
             {contacts === null && !error && <ActivityIndicator color={colors.white} />}
             {contacts?.length === 0 && (
                 <Card>
-                    <AppText variant="title">Aucun proche relié</AppText>
-                    <AppText>Partagez votre code d’invitation depuis l’onglet Profil pour retrouver votre famille ici.</AppText>
+                    <AppText variant="title">Votre répertoire est vide</AppText>
+                    <AppText>Ajoutez une personne ou partagez votre code depuis Profil pour retrouver votre famille ici.</AppText>
                 </Card>
             )}
 
@@ -59,10 +103,16 @@ export default function SeniorDirectory() {
                         </View>
                         <View style={styles.contactDetails}>
                             <AppText variant="title">{contact.fullName}</AppText>
-                            <AppText variant="small">{contact.email}</AppText>
+                            {Boolean(contact.phone) && <AppText variant="small">{contact.phone}</AppText>}
+                            {Boolean(contact.email) && <AppText variant="small">{contact.email}</AppText>}
                         </View>
                     </View>
-                    <Button label="Envoyer un e-mail" onPress={() => { void emailContact(contact.email); }} />
+                    {Boolean(contact.phone) && (
+                        <Button label="Appeler" variant="success" onPress={() => { void openContact(`tel:${contact.phone}`); }} />
+                    )}
+                    {Boolean(contact.email) && (
+                        <Button label="Envoyer un e-mail" variant="ghost" onPress={() => { void openContact(`mailto:${contact.email}`); }} />
+                    )}
                 </Card>
             ))}
         </Screen>

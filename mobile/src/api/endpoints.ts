@@ -37,6 +37,8 @@ export const alertsApi = {
 
 export const directoryApi = {
   listContacts: () => request<DirectoryContact[]>("GET", "/links/me/contacts"),
+  createContact: (data: { fullName: string; phone: string; email?: string }) =>
+    request<DirectoryContact>("POST", "/links/me/contacts", data),
 };
 
 /** Côté FAMILLE */

@@ -6,6 +6,8 @@ import {
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
+import { CreateContactDto } from "./dto/create-contact.dto";
+import { SeniorContact } from "./senior-contact.entity";
 import { SeniorLink } from "./senior-link.entity";
 import { UsersService } from "../users/users.service";
 
@@ -13,6 +15,8 @@ import { UsersService } from "../users/users.service";
 export class LinksService {
   constructor(
     @InjectRepository(SeniorLink) private readonly repo: Repository<SeniorLink>,
+    @InjectRepository(SeniorContact)
+    private readonly contacts: Repository<SeniorContact>,
     private readonly users: UsersService,
   ) {}
 
@@ -37,18 +41,45 @@ export class LinksService {
     return links.map((l) => l.familyId);
   }
 
-  async getFamilyContactsForSenior(seniorId: string) {
-    const familyIds = await this.getFamilyIdsForSenior(seniorId);
+  async getContactsForSenior(seniorId: string) {
+    const [familyIds, savedContacts] = await Promise.all([
+      this.getFamilyIdsForSenior(seniorId),
+      this.contacts.find({ where: { seniorId } }),
+    ]);
     const users = await Promise.all(
       familyIds.map((id) => this.users.findById(id)),
     );
-    return users
-      .flatMap((user) =>
-        user
-          ? [{ id: user.id, fullName: user.fullName, email: user.email }]
-          : [],
-      )
-      .sort((left, right) => left.fullName.localeCompare(right.fullName));
+    const familyContacts = users.flatMap((user) =>
+      user
+        ? [
+            {
+              id: user.id,
+              fullName: user.fullName,
+              email: user.email,
+              phone: null,
+            },
+          ]
+        : [],
+    );
+    const personalContacts = savedContacts.map((contact) => ({
+      id: contact.id,
+      fullName: contact.fullName,
+      email: contact.email,
+      phone: contact.phone,
+    }));
+    return [...familyContacts, ...personalContacts].sort((left, right) =>
+      left.fullName.localeCompare(right.fullName),
+    );
+  }
+
+  async createContact(seniorId: string, dto: CreateContactDto) {
+    const contact = this.contacts.create({
+      seniorId,
+      fullName: dto.fullName.trim(),
+      phone: dto.phone.trim(),
+      email: dto.email?.trim() || null,
+    });
+    return this.contacts.save(contact);
   }
 
   isLinked(familyId: string, seniorId: string) {
