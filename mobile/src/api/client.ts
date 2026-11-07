@@ -1,4 +1,6 @@
 import { API_URL } from "../config";
+import { File as ExpoFile } from "expo-file-system";
+import { Platform } from "react-native";
 
 /** Token JWT courant, alimenté par AuthContext. */
 let authToken: string | null = null;
@@ -14,6 +16,14 @@ export class ApiError extends Error {
   ) {
     super(message);
   }
+}
+
+function connectionError(error: unknown) {
+  const reason = error instanceof Error ? ` (${error.message})` : "";
+  return new ApiError(
+    `Impossible de joindre ${API_URL}${reason}. Vérifiez que l'API tourne et que le téléphone est sur le même Wi-Fi.`,
+    0,
+  );
 }
 
 async function parseResponse<T>(response: Response): Promise<T> {
@@ -48,11 +58,8 @@ export async function request<T>(
       },
       body: body ? JSON.stringify(body) : undefined,
     });
-  } catch {
-    throw new ApiError(
-      "Impossible de joindre le serveur. Vérifiez que l'API tourne et que le téléphone est sur le même Wi-Fi.",
-      0,
-    );
+  } catch (error: unknown) {
+    throw connectionError(error);
   }
 
   return parseResponse<T>(response);
@@ -61,12 +68,27 @@ export async function request<T>(
 /** Envoie un fichier multipart sans fixer Content-Type, pour laisser RN générer le boundary. */
 export async function uploadFile<T>(
   path: string,
-  file: { uri: string; name: string; type: string },
+  file: { uri: string; name: string; type: string; blob?: Blob },
   fields: Record<string, string>,
   fieldName = "audio",
 ): Promise<T> {
   const form = new FormData();
-  form.append(fieldName, file as unknown as Blob);
+  if (Platform.OS === "web") {
+    let blob = file.blob;
+    if (!blob) {
+      try {
+        const localFile = await fetch(file.uri);
+        if (!localFile.ok) throw new Error("Fichier local introuvable.");
+        blob = await localFile.blob();
+      } catch {
+        throw new ApiError("Impossible de lire le fichier sélectionné.", 0);
+      }
+    }
+    form.append(fieldName, blob, file.name);
+  } else {
+    // Expo's native FormData converter accepts Blob/File objects, not URI descriptors.
+    form.append(fieldName, new ExpoFile(file.uri), file.name);
+  }
   Object.entries(fields).forEach(([key, value]) => form.append(key, value));
 
   let response: Response;
@@ -76,11 +98,8 @@ export async function uploadFile<T>(
       headers: authToken ? { Authorization: `Bearer ${authToken}` } : {},
       body: form,
     });
-  } catch {
-    throw new ApiError(
-      "Impossible de joindre le serveur. Vérifiez que l'API tourne et que le téléphone est sur le même Wi-Fi.",
-      0,
-    );
+  } catch (error: unknown) {
+    throw connectionError(error);
   }
 
   return parseResponse<T>(response);

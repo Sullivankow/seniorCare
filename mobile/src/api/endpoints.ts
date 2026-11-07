@@ -62,7 +62,7 @@ export const voiceMessagesApi = {
 export const familyPhotosApi = {
   upload: (
     seniorId: string,
-    file: { uri: string; name: string; type: string },
+    file: { uri: string; name: string; type: string; blob?: Blob },
     fields: Record<string, string>,
   ) =>
     uploadFile<FamilyPhoto>(

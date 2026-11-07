@@ -34,6 +34,7 @@ export function FamilyPhotoComposer({ seniorId, onUploaded }: Props) {
         uri: asset.uri,
         name: asset.fileName ?? `photo-${Date.now()}.jpg`,
         type: asset.mimeType ?? 'image/jpeg',
+        blob: asset.file,
       },
       fields,
     );
