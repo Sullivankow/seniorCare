@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { Alert as NativeAlert, RefreshControl, StyleSheet, View, useWindowDimensions } from 'react-native';
-import { useFocusEffect } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { Check, ChevronRight, CircleCheck, Images, Mic, Phone, Play } from 'lucide-react-native';
 import { Screen, AppText, Button, Card, ErrorText } from '../../src/components/ui';
 import { SosButton } from '../../src/features/senior/SosButton';
@@ -104,7 +104,7 @@ export default function SeniorHome() {
       icon: <Images size={28} color={colors.white} strokeWidth={2.2} />,
       trailing: <ChevronRight size={22} color={colors.white} strokeWidth={2.4} />,
       color: colors.seniorOrange,
-      onPress: () => NativeAlert.alert('Photo de famille', 'Aucune photo n’est disponible pour le moment.'),
+      onPress: () => router.push('/photos'),
     },
   ];
   const actionRows = Array.from({ length: Math.ceil(actions.length / columns) }, (_, index) =>

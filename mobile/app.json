@@ -10,6 +10,12 @@
       "expo-router",
       "expo-secure-store",
       [
+        "expo-image-picker",
+        {
+          "photosPermission": "SeniorCare accède à vos photos pour les partager avec votre famille."
+        }
+      ],
+      [
         "expo-audio",
         {
           "microphonePermission": "SeniorCare utilise le microphone pour enregistrer vos messages vocaux.",

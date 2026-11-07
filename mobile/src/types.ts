@@ -28,6 +28,19 @@ export interface VoiceMessage {
   createdAt: string;
 }
 
+export interface FamilyPhoto {
+  id: string;
+  seniorId: string;
+  senderName: string;
+  mimeType: string;
+  fileSizeBytes: number;
+  caption: string | null;
+  memoryDate: string | null;
+  surpriseDate: string | null;
+  likedAt: string | null;
+  createdAt: string;
+}
+
 export interface AuthResponse {
   accessToken: string;
   user: User;

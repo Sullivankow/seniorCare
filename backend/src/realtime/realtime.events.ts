@@ -4,6 +4,8 @@ export const RealtimeEvents = {
   ALERT_CREATED: "alert:created",
   ALERT_RESOLVED: "alert:resolved",
   VOICE_MESSAGE_CREATED: "voice-message:created",
+  PHOTO_CREATED: "photo:created",
+  PHOTO_REACTION_UPDATED: "photo:reaction-updated",
 } as const;
 
 /** Nom de la « room » Socket.IO d'un senior : la famille et le senior y sont abonnés. */

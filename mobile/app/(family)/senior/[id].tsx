@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
-import { Stack, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { Screen, AppText, Card, ErrorText } from '../../../src/components/ui';
+import { router, Stack, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { Screen, AppText, Button, Card, ErrorText } from '../../../src/components/ui';
 import { familyApi, voiceMessagesApi } from '../../../src/api/endpoints';
 import { useRealtime } from '../../../src/hooks/useRealtime';
 import { RealtimeEvents } from '../../../src/api/events';
@@ -51,6 +51,10 @@ export default function SeniorHistoryScreen() {
   return (
     <Screen>
       <Stack.Screen options={{ title: name ? `Historique de ${name}` : 'Historique' }} />
+      <Button
+        label="Voir et ajouter des photos"
+        onPress={() => router.push({ pathname: '/senior/[id]/photos', params: { id, name } })}
+      />
       <ErrorText message={error} />
       {entries.length === 0 && voiceMessages.length === 0 && <AppText>Aucun évènement pour l'instant.</AppText>}
 

@@ -17,6 +17,7 @@ Application de veille bienveillante entre des seniors et leur famille.
 - **Comptes et accès** : inscription en tant que senior ou membre de la famille, connexion par e-mail et mot de passe, déconnexion et restauration de la session au redémarrage de l'app.
 - **Rôle senior** : code d'invitation unique à 6 caractères, pointage « Je vais bien » ou « Pas très en forme », affichage du dernier pointage et bouton SOS déclenché par un appui long de 1,5 seconde. Le senior peut annuler une alerte active.
 - **Rôle famille** : rattachement à un senior avec son code, tableau de bord des seniors suivis, état du jour et dernière nouvelle, historique des pointages et alertes, clôture d'une urgence.
+- **Album photo familial** : envoi de photos et de petits mots par les proches, photo surprise du jour, souvenirs datés, cœur du senior et lecture vocale des messages.
 - **Alertes et temps réel** : une alerte active à la fois par senior; les pointages, nouvelles alertes et clôtures sont transmis aux appareils connectés concernés via Socket.IO. Le tableau de bord affiche une alerte urgente immédiatement.
 - **Protection des données** : mots de passe hachés, accès API par jeton JWT, contrôle des rôles et vérification du rattachement famille-senior avant l'accès à ses données.
 
@@ -87,6 +88,12 @@ Le senior peut enregistrer un message de 60 secondes maximum. L'API limite les f
 
 En développement, `VOICE_STORAGE_DRIVER=local` stocke les fichiers dans `backend/uploads/voice-messages/`. Pour plusieurs instances backend, utilisez un stockage objet partagé avec `VOICE_STORAGE_DRIVER=s3` et configurez les variables `VOICE_S3_*` de `backend/.env.example`. Avec `DB_SYNCHRONIZE=false`, exécutez `backend/sql/create-voice-messages.sql` une fois.
 
+### Album photo familial
+
+Un proche lié peut ajouter une photo, un petit mot, une date de souvenir et la marquer comme photo surprise du jour. Le senior consulte son album, aime les photos et peut écouter les petits mots. Les photos sont privées et ne sont délivrées qu'après vérification du JWT et du lien famille-senior ; l'évènement temps réel fonctionne lorsque l'application est ouverte. Les notifications push quand elle est fermée ne sont pas incluses.
+
+Les fichiers sont stockés localement dans `backend/uploads/family-photos/` par défaut. En production, configurez le stockage S3 partagé avec `MEDIA_STORAGE_DRIVER=s3` et les variables `MEDIA_S3_*` ; les anciennes variables `VOICE_S3_*` restent acceptées pour compatibilité. Si `DB_SYNCHRONIZE=false`, exécutez `backend/sql/create-family-photos.sql` une fois.
+
 ### Tester le scénario complet
 
 1. Sur un premier appareil (ou l'émulateur) : **créer un compte « senior »** → un **code à 6 caractères** s'affiche.
@@ -115,6 +122,7 @@ src/
 ├── checkins/               Pointages « Je vais bien » (côté senior)
 ├── alerts/                 Alertes d'urgence : création, clôture
 ├── family/                 Tableau de bord famille (agrège users + checkins + alerts)
+├── photos/                 Album familial privé, réactions et flux image authentifié
 └── realtime/               Passerelle Socket.IO (rooms par senior)
 ```
 

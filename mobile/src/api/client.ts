@@ -34,7 +34,7 @@ async function parseResponse<T>(response: Response): Promise<T> {
  * Tous les appels de l'app passent par ici (un seul endroit à modifier pour gérer les erreurs/refresh).
  */
 export async function request<T>(
-  method: "GET" | "POST",
+  method: "GET" | "POST" | "PUT" | "DELETE",
   path: string,
   body?: unknown,
 ): Promise<T> {
@@ -63,9 +63,10 @@ export async function uploadFile<T>(
   path: string,
   file: { uri: string; name: string; type: string },
   fields: Record<string, string>,
+  fieldName = "audio",
 ): Promise<T> {
   const form = new FormData();
-  form.append("audio", file as unknown as Blob);
+  form.append(fieldName, file as unknown as Blob);
   Object.entries(fields).forEach(([key, value]) => form.append(key, value));
 
   let response: Response;

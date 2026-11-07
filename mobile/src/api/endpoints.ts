@@ -1,3 +1,4 @@
+import { API_URL } from "../config";
 import { request, uploadFile } from "./client";
 import {
   Alert,
@@ -5,6 +6,7 @@ import {
   CheckIn,
   CheckInStatus,
   DirectoryContact,
+  FamilyPhoto,
   Role,
   SeniorSummary,
   VoiceMessage,
@@ -55,6 +57,28 @@ export const voiceMessagesApi = {
       "GET",
       `/family/seniors/${seniorId}/voice-messages`,
     ),
+};
+
+export const familyPhotosApi = {
+  upload: (
+    seniorId: string,
+    file: { uri: string; name: string; type: string },
+    fields: Record<string, string>,
+  ) =>
+    uploadFile<FamilyPhoto>(
+      `/family/seniors/${seniorId}/photos`,
+      file,
+      fields,
+      "photo",
+    ),
+  listForFamily: (seniorId: string) =>
+    request<FamilyPhoto[]>("GET", `/family/seniors/${seniorId}/photos`),
+  listMine: () => request<FamilyPhoto[]>("GET", "/photos/me"),
+  imageUrl: (photoId: string) => `${API_URL}/photos/${photoId}/image`,
+  like: (photoId: string) =>
+    request<FamilyPhoto>("PUT", `/photos/${photoId}/like`),
+  unlike: (photoId: string) =>
+    request<FamilyPhoto>("DELETE", `/photos/${photoId}/like`),
 };
 
 /** Côté FAMILLE */

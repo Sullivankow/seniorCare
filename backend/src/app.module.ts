@@ -9,6 +9,7 @@ import { AlertsModule } from "./alerts/alerts.module";
 import { FamilyModule } from "./family/family.module";
 import { RealtimeModule } from "./realtime/realtime.module";
 import { VoiceMessagesModule } from "./voice-messages/voice-messages.module";
+import { PhotosModule } from "./photos/photos.module";
 
 /**
  * Module racine : connexion PostgreSQL + assemblage des modules métier.
@@ -38,6 +39,7 @@ import { VoiceMessagesModule } from "./voice-messages/voice-messages.module";
     AlertsModule,
     FamilyModule,
     VoiceMessagesModule,
+    PhotosModule,
   ],
 })
 export class AppModule {}

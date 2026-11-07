@@ -21,6 +21,7 @@ export default function FamilyLayout() {
       <Stack.Screen name="index" options={{ title: 'Mes proches' }} />
       <Stack.Screen name="add-senior" options={{ title: 'Ajouter un proche' }} />
       <Stack.Screen name="senior/[id]" options={{ title: 'Historique' }} />
+      <Stack.Screen name="senior/[id]/photos" options={{ title: 'Album photo' }} />
     </Stack>
   );
 }
