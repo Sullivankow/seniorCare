@@ -36,11 +36,12 @@ function SwipeToDelete({ children, disabled, onDelete }: SwipeToDeleteProps) {
     }).start();
   }, [translateX]);
   const settleSwipe = useCallback((gestureState: { dx: number; vx: number }) => {
-    const shouldOpen = gestureState.dx < -SWIPE_ACTION_WIDTH / 2 || gestureState.vx < -0.5
-      ? true
-      : gestureState.dx > SWIPE_ACTION_WIDTH / 2 || gestureState.vx > 0.5
-        ? false
-        : isOpen;
+    let shouldOpen = isOpen;
+    if (gestureState.dx < -SWIPE_ACTION_WIDTH / 2 || gestureState.vx < -0.5) {
+      shouldOpen = true;
+    } else if (gestureState.dx > SWIPE_ACTION_WIDTH / 2 || gestureState.vx > 0.5) {
+      shouldOpen = false;
+    }
     setIsOpen(shouldOpen);
     Animated.spring(translateX, {
       toValue: shouldOpen ? -SWIPE_ACTION_WIDTH : 0,
