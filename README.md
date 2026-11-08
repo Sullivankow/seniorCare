@@ -16,7 +16,8 @@ Application de veille bienveillante entre des seniors et leur famille.
 
 - **Comptes et accès** : inscription en tant que senior ou membre de la famille, connexion par e-mail et mot de passe, déconnexion et restauration de la session au redémarrage de l'app.
 - **Rôle senior** : code d'invitation unique à 6 caractères, pointage « Je vais bien » ou « Pas très en forme », affichage du dernier pointage et bouton SOS déclenché par un appui long de 1,5 seconde. Le senior peut annuler une alerte active.
-- **Rôle famille** : rattachement à un senior avec son code, tableau de bord des seniors suivis, état du jour et dernière nouvelle, historique des pointages et alertes, clôture d'une urgence.
+- **Profil et répertoire du senior** : consultation de son nom, de son e-mail et de son code d'invitation; liste des proches liés et ajout de contacts personnels avec téléphone et e-mail. Les actions « Appeler » et « Envoyer un e-mail » ouvrent l'application correspondante du téléphone.
+- **Rôle famille** : rattachement à un senior avec son code, tableau de bord des seniors suivis, état du jour et dernière nouvelle, historique chronologique des pointages et alertes, messages vocaux reçus et clôture d'une urgence.
 - **Album photo familial** : envoi de photos et de petits mots par les proches, photo surprise du jour, souvenirs datés, cœur du senior et lecture vocale des messages.
 - **Alertes et temps réel** : une alerte active à la fois par senior; les pointages, nouvelles alertes et clôtures sont transmis aux appareils connectés concernés via Socket.IO. Le tableau de bord affiche une alerte urgente immédiatement.
 - **Protection des données** : mots de passe hachés, accès API par jeton JWT, contrôle des rôles et vérification du rattachement famille-senior avant l'accès à ses données.
@@ -35,7 +36,7 @@ Application de veille bienveillante entre des seniors et leur famille.
 - Rappel automatique si un senior n'a pas fait son pointage à une heure définie.
 - Collecte et envoi de la position GPS depuis l'app lors d'un SOS (l'API accepte déjà des coordonnées facultatives).
 - Fuseau horaire et heure de rappel configurables par utilisateur.
-- Récupération de mot de passe, modification du profil et suppression de compte.
+- Récupération de mot de passe et suppression de compte. Le profil est consultable, mais sa modification n'est pas encore implémentée.
 - Migrations de base de données, tests automatisés, intégration continue et déploiement de production.
 
 ---
@@ -94,6 +95,10 @@ Un proche lié peut ajouter une photo, un petit mot, une date de souvenir et la 
 
 Les fichiers sont stockés localement dans `backend/uploads/family-photos/` par défaut. En production, configurez le stockage S3 partagé avec `MEDIA_STORAGE_DRIVER=s3` et les variables `MEDIA_S3_*` ; les anciennes variables `VOICE_S3_*` restent acceptées pour compatibilité. Si `DB_SYNCHRONIZE=false`, exécutez `backend/sql/create-family-photos.sql` une fois.
 
+### Répertoire du senior
+
+Les proches liés apparaissent automatiquement dans le répertoire du senior; celui-ci peut aussi ajouter des contacts personnels et lancer un appel ou un e-mail depuis son téléphone. Si `DB_SYNCHRONIZE=false`, exécutez `backend/sql/create-senior-contacts.sql` une fois.
+
 ### Tester le scénario complet
 
 1. Sur un premier appareil (ou l'émulateur) : **créer un compte « senior »** → un **code à 6 caractères** s'affiche.
@@ -122,11 +127,13 @@ src/
 ├── checkins/               Pointages « Je vais bien » (côté senior)
 ├── alerts/                 Alertes d'urgence : création, clôture
 ├── family/                 Tableau de bord famille (agrège users + checkins + alerts)
+├── links/                  Rattachement famille-senior et répertoire de contacts du senior
+├── voice-messages/         Enregistrement, liste familiale et lecture protégée des messages
 ├── photos/                 Album familial privé, réactions et flux image authentifié
 └── realtime/               Passerelle Socket.IO (rooms par senior)
 ```
 
-**Temps réel** : namespace Socket.IO `/realtime`. À la connexion (JWT dans `auth.token`), le senior rejoint sa room `senior:<id>` et chaque proche rejoint les rooms des seniors qu'il suit. Les services émettent `checkin:created`, `alert:created`, `alert:resolved` ; seules les personnes concernées les reçoivent.
+**Temps réel** : namespace Socket.IO `/realtime`. À la connexion (JWT dans `auth.token`), le senior rejoint sa room `senior:<id>` et chaque proche rejoint les rooms des seniors qu'il suit. Les services diffusent les pointages, alertes, messages vocaux, photos et réactions photo ; seules les personnes concernées les reçoivent.
 
 **Sécurité** : mots de passe hachés (bcrypt), JWT, routes protégées par rôle, un proche ne peut lire/clôturer que les données des seniors auxquels il est rattaché (403 sinon), validation stricte des entrées.
 
@@ -135,12 +142,26 @@ src/
 | Méthode | Route                                          | Rôle             | Description                              |
 | ------- | ---------------------------------------------- | ---------------- | ---------------------------------------- |
 | POST    | `/api/auth/register` · `/api/auth/login`       | public           | Compte / connexion                       |
+| GET     | `/api/users/me`                                | connecté         | Profil du compte connecté                |
 | POST    | `/api/checkins`                                | senior           | « Je vais bien » / « Pas très en forme » |
+| GET     | `/api/checkins/me/last`                        | senior           | Dernier pointage                         |
 | POST    | `/api/alerts`                                  | senior           | Déclencher une urgence                   |
+| GET     | `/api/alerts/me/active`                        | senior           | Alerte active                            |
 | POST    | `/api/alerts/:id/resolve`                      | senior / famille | Clôturer une alerte                      |
 | POST    | `/api/family/seniors`                          | famille          | Suivre un senior (code)                  |
 | GET     | `/api/family/seniors`                          | famille          | Tableau de bord                          |
 | GET     | `/api/family/seniors/:id/checkins` · `/alerts` | famille          | Historiques                              |
+| GET     | `/api/links/me/contacts`                       | senior           | Lister les contacts                      |
+| POST    | `/api/links/me/contacts`                       | senior           | Ajouter un contact                       |
+| GET     | `/api/family/seniors/:id/photos`               | famille          | Lister les photos                        |
+| POST    | `/api/family/seniors/:id/photos`               | famille          | Ajouter une photo                        |
+| GET     | `/api/photos/me`                               | senior           | Consulter son album                      |
+| GET     | `/api/photos/:id/image`                        | senior / famille | Lire une photo autorisée                 |
+| PUT     | `/api/photos/:id/like`                         | senior           | Aimer une photo                          |
+| DELETE  | `/api/photos/:id/like`                         | senior           | Retirer sa réaction                      |
+| POST    | `/api/voice-messages`                          | senior           | Envoyer un message vocal                 |
+| GET     | `/api/family/seniors/:id/voice-messages`       | famille          | Lister les 50 derniers messages vocaux   |
+| GET     | `/api/voice-messages/:id/audio`                | senior / famille | Lire un message vocal autorisé           |
 
 ### Mobile (`mobile/`)
 
@@ -149,8 +170,8 @@ app/                        Routes (expo-router) : fichiers = écrans, volontair
 ├── _layout.tsx             Fournit la session (AuthProvider)
 ├── index.tsx               Aiguillage : login / interface senior / interface famille
 ├── (auth)/                 login, register
-├── (senior)/               Interface SENIOR  (1 gros bouton + urgence)
-└── (family)/               Interface FAMILLE (dashboard, ajout, historique)
+├── (senior)/               Accueil, album photo, répertoire et profil
+└── (family)/               Tableau de bord, ajout, historique et album par senior
 src/
 ├── api/                    client.ts (fetch + token + erreurs), endpoints.ts (1 objet par domaine)
 ├── context/AuthContext     Session persistée dans SecureStore
@@ -174,7 +195,7 @@ Interface senior pensée pour l'accessibilité : texte 18 pt et plus, fort contr
 3. **Géolocalisation** au moment du SOS (`expo-location`) : l'API accepte déjà `latitude`/`longitude`.
 4. **Migrations TypeORM** à la place de `DB_SYNCHRONIZE=true` avant la mise en production.
 5. Fuseau horaire par utilisateur, heure de rappel personnalisée.
-6. Contacts d'urgence / appel direct (`tel:`), SMS de secours.
+6. SMS de secours.
 7. Tests (Jest côté API, jest-expo côté mobile), CI, déploiement (Docker + Postgres managé).
 
 ## 4. Sécurité : à faire avant la production
