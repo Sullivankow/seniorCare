@@ -39,6 +39,19 @@ export class CheckinsService {
     });
   }
 
+  findLastForSeniors(seniorIds: string[]) {
+    if (seniorIds.length === 0) return Promise.resolve([] as CheckIn[]);
+
+    // PostgreSQL DISTINCT ON returns the newest check-in for each senior in one query.
+    return this.repo
+      .createQueryBuilder("checkin")
+      .distinctOn(["checkin.seniorId"])
+      .where("checkin.seniorId IN (:...seniorIds)", { seniorIds })
+      .orderBy("checkin.seniorId", "ASC")
+      .addOrderBy("checkin.createdAt", "DESC")
+      .getMany();
+  }
+
   findHistory(seniorId: string, limit = 50) {
     return this.repo.find({
       where: { seniorId },

@@ -26,27 +26,35 @@ export class FamilyService {
   /** Une carte par senior suivi : dernier pointage, alerte active, a-t-il pointé aujourd'hui ? */
   async listSummaries(familyId: string) {
     const seniorIds = await this.links.getSeniorIdsForFamily(familyId);
-    const activeAlerts = await this.alerts.findActiveForSeniors(seniorIds);
+    const [activeAlerts, seniors, lastCheckIns] = await Promise.all([
+      this.alerts.findActiveForSeniors(seniorIds),
+      this.users.findByIds(seniorIds),
+      this.checkins.findLastForSeniors(seniorIds),
+    ]);
+    const activeAlertsBySeniorId = new Map(
+      activeAlerts.map((alert) => [alert.seniorId, alert]),
+    );
+    const seniorsById = new Map(seniors.map((senior) => [senior.id, senior]));
+    const lastCheckInsBySeniorId = new Map(
+      lastCheckIns.map((checkIn) => [checkIn.seniorId, checkIn]),
+    );
 
     // Début de journée (heure du serveur). Évolution prévue : fuseau horaire par utilisateur.
     const startOfDay = new Date();
     startOfDay.setHours(0, 0, 0, 0);
 
-    return Promise.all(
-      seniorIds.map(async (seniorId) => {
-        const [senior, lastCheckIn] = await Promise.all([
-          this.users.findById(seniorId),
-          this.checkins.findLast(seniorId),
-        ]);
-        return {
-          senior: { id: seniorId, fullName: senior?.fullName ?? "Inconnu" },
-          lastCheckIn: lastCheckIn ?? null,
-          activeAlert:
-            activeAlerts.find((a) => a.seniorId === seniorId) ?? null,
-          checkedInToday: !!lastCheckIn && lastCheckIn.createdAt >= startOfDay,
-        };
-      }),
-    );
+    return seniorIds.map((seniorId) => {
+      const senior = seniorsById.get(seniorId);
+      const lastCheckIn = lastCheckInsBySeniorId.get(seniorId);
+      return {
+        senior: { id: seniorId, fullName: senior?.fullName ?? "Inconnu" },
+        lastCheckIn: lastCheckIn ?? null,
+        activeAlert: activeAlertsBySeniorId.get(seniorId) ?? null,
+        checkedInToday: Boolean(
+          lastCheckIn && lastCheckIn.createdAt >= startOfDay,
+        ),
+      };
+    });
   }
 
   async getCheckins(familyId: string, seniorId: string) {

@@ -46,9 +46,7 @@ export class LinksService {
       this.getFamilyIdsForSenior(seniorId),
       this.contacts.find({ where: { seniorId } }),
     ]);
-    const users = await Promise.all(
-      familyIds.map((id) => this.users.findById(id)),
-    );
+    const users = await this.users.findByIds(familyIds);
     const familyContacts = users.flatMap((user) =>
       user
         ? [
