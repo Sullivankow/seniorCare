@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { Alert as NativeAlert, RefreshControl, StyleSheet, View, useWindowDimensions } from 'react-native';
+import { RefreshControl, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { Check, ChevronRight, CircleCheck, Images, Mic, Phone, Play } from 'lucide-react-native';
 import { Screen, AppText, Button, Card, ErrorText } from '../../src/components/ui';
@@ -7,6 +7,7 @@ import { SosButton } from '../../src/features/senior/SosButton';
 import { SeniorActionButton } from '../../src/features/senior/SeniorActionButton';
 import { SeniorStatusPanel } from '../../src/features/senior/SeniorStatusPanel';
 import { VoiceMessageRecorder } from '../../src/features/senior/VoiceMessageRecorder';
+import { CallContactPicker } from '../../src/features/senior/CallContactPicker';
 import { alertsApi, checkinsApi } from '../../src/api/endpoints';
 import { useAuth } from '../../src/context/AuthContext';
 import { useRealtime } from '../../src/hooks/useRealtime';
@@ -26,6 +27,7 @@ export default function SeniorHome() {
   const [refreshing, setRefreshing] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [voiceRecorderVisible, setVoiceRecorderVisible] = useState(false);
+  const [callContactPickerVisible, setCallContactPickerVisible] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -59,8 +61,6 @@ export default function SeniorHome() {
 
   const firstName = user?.fullName.split(' ')[0];
   const error = loadError ?? sendCheckIn.error ?? sendNotGreat.error ?? triggerSos.error ?? cancelSos.error;
-  const showUnavailableAction = (action: string) =>
-    NativeAlert.alert(action, 'Cette fonction sera disponible lorsque les coordonnées de votre proche seront configurées.');
 
   let columns = 1;
   if (width >= 900) {
@@ -81,12 +81,12 @@ export default function SeniorHome() {
     },
     {
       key: 'call',
-      title: `Appeler ${firstName ?? 'mon proche'}`,
+      title: 'Appeler un proche',
       subtitle: 'Appel direct',
       icon: <Phone size={28} color={colors.white} strokeWidth={2.2} />,
       trailing: <ChevronRight size={22} color={colors.white} strokeWidth={2.4} />,
       color: colors.seniorBlue,
-      onPress: () => showUnavailableAction('Appel direct'),
+      onPress: () => setCallContactPickerVisible(true),
     },
     {
       key: 'voice',
@@ -113,49 +113,53 @@ export default function SeniorHome() {
 
   return (
     <>
-    <Screen
-      backgroundColor={colors.seniorBg}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={async () => { setRefreshing(true); await load(); setRefreshing(false); }} />
-      }
-    >
-      <SeniorStatusPanel />
-      <AppText variant="title" color={colors.white}>Bonjour {firstName}</AppText>
+      <Screen
+        backgroundColor={colors.seniorBg}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={async () => { setRefreshing(true); await load(); setRefreshing(false); }} />
+        }
+      >
+        <SeniorStatusPanel />
+        <AppText variant="title" color={colors.white}>Bonjour {firstName}</AppText>
 
-      {activeAlert ? (
-        <Card tone="danger">
-          <AppText variant="title" color={colors.danger}>Votre famille a été prévenue</AppText>
-          <AppText>Alerte envoyée {timeAgo(activeAlert.createdAt)}. Restez où vous êtes, on s'occupe de vous.</AppText>
-          <Button variant="ghost" label="C'était une erreur : annuler" onPress={() => cancelSos.run(activeAlert.id)} loading={cancelSos.loading} />
-        </Card>
-      ) : (
-        <>
-          {actionRows.map((row, rowIndex) => (
-            <View key={`actions-${rowIndex}`} style={columns > 1 ? styles.actionRow : undefined}>
-              {row.map(({ key, ...action }) => (
-                <SeniorActionButton
-                  key={key}
-                  {...action}
-                  style={columns > 1 ? styles.actionTile : undefined}
-                />
-              ))}
-            </View>
-          ))}
-          <AppText center color={colors.white}>
-            {last ? `Dernier message envoyé ${timeAgo(last.createdAt)}` : "Appuyez pour dire à votre famille que tout va bien."}
-          </AppText>
-          <Button variant="warning" label="Je ne suis pas très en forme" onPress={() => sendNotGreat.run()} loading={sendNotGreat.loading} />
-          <SosButton onTrigger={() => triggerSos.run()} disabled={triggerSos.loading} />
-        </>
-      )}
+        {activeAlert ? (
+          <Card tone="danger">
+            <AppText variant="title" color={colors.danger}>Votre famille a été prévenue</AppText>
+            <AppText>Alerte envoyée {timeAgo(activeAlert.createdAt)}. Restez où vous êtes, on s'occupe de vous.</AppText>
+            <Button variant="ghost" label="C'était une erreur : annuler" onPress={() => cancelSos.run(activeAlert.id)} loading={cancelSos.loading} />
+          </Card>
+        ) : (
+          <>
+            {actionRows.map((row, rowIndex) => (
+              <View key={`actions-${rowIndex}`} style={columns > 1 ? styles.actionRow : undefined}>
+                {row.map(({ key, ...action }) => (
+                  <SeniorActionButton
+                    key={key}
+                    {...action}
+                    style={columns > 1 ? styles.actionTile : undefined}
+                  />
+                ))}
+              </View>
+            ))}
+            <AppText center color={colors.white}>
+              {last ? `Dernier message envoyé ${timeAgo(last.createdAt)}` : "Appuyez pour dire à votre famille que tout va bien."}
+            </AppText>
+            <Button variant="warning" label="Je ne suis pas très en forme" onPress={() => sendNotGreat.run()} loading={sendNotGreat.loading} />
+            <SosButton onTrigger={() => triggerSos.run()} disabled={triggerSos.loading} />
+          </>
+        )}
 
-      <ErrorText message={error} />
-    </Screen>
-    <VoiceMessageRecorder
-      visible={voiceRecorderVisible}
-      onClose={() => setVoiceRecorderVisible(false)}
-      onMessageSent={() => { void load(); }}
-    />
+        <ErrorText message={error} />
+      </Screen>
+      <VoiceMessageRecorder
+        visible={voiceRecorderVisible}
+        onClose={() => setVoiceRecorderVisible(false)}
+        onMessageSent={() => { void load(); }}
+      />
+      <CallContactPicker
+        visible={callContactPickerVisible}
+        onClose={() => setCallContactPickerVisible(false)}
+      />
     </>
   );
 }
