@@ -41,6 +41,7 @@ export class LinksService {
     return links.map((l) => l.familyId);
   }
 
+  /** Combine les comptes familiaux liés et les contacts saisis dans le répertoire. */
   async getContactsForSenior(seniorId: string) {
     const [familyIds, savedContacts] = await Promise.all([
       this.getFamilyIdsForSenior(seniorId),

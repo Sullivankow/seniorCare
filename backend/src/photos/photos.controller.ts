@@ -72,6 +72,7 @@ const photoUploadOptions = {
 
 @Injectable()
 class CleanupUploadedPhotoInterceptor implements NestInterceptor {
+  /** Supprime le fichier temporaire Multer même si le traitement échoue. */
   intercept(context: ExecutionContext, next: CallHandler) {
     const request = context
       .switchToHttp()

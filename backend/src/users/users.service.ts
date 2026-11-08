@@ -15,6 +15,7 @@ export class UsersService {
     return this.repo.findOne({ where: { id } });
   }
 
+  /** Charge plusieurs comptes en une requête pour éviter les lectures N+1. */
   findByIds(ids: string[]) {
     if (ids.length === 0) return Promise.resolve([] as User[]);
     return this.repo.find({ where: { id: In(ids) } });

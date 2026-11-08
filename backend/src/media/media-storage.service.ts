@@ -15,7 +15,7 @@ import { copyFile, mkdir, rm, stat } from "node:fs/promises";
 import { dirname, resolve, sep } from "node:path";
 import { Readable } from "node:stream";
 
-/** Shared private storage; each domain supplies its own local directory. */
+/** Stockage privé commun aux médias ; chaque domaine fournit son répertoire local. */
 @Injectable()
 export class MediaStorageService {
   private readonly driver: "local" | "s3";
@@ -28,6 +28,7 @@ export class MediaStorageService {
     directorySetting: string,
     defaultDirectory: string,
   ) {
+    // Les variables VOICE_* restent des replis pour préserver les anciennes configurations.
     const driver =
       config.get<string>("MEDIA_STORAGE_DRIVER") ??
       config.get<string>("VOICE_STORAGE_DRIVER", "local");
@@ -130,6 +131,7 @@ export class MediaStorageService {
 
   private localPath(key: string) {
     const path = resolve(this.localRoot, key);
+    // Refuse une clé qui tenterait de lire ou d'écrire hors du répertoire configuré.
     if (!path.startsWith(`${this.localRoot}${sep}`)) {
       throw new InternalServerErrorException("Clé de stockage invalide.");
     }

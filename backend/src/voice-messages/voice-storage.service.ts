@@ -2,7 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { MediaStorageService } from "../media/media-storage.service";
 
-/** Keeps the existing voice storage path and configuration backward-compatible. */
+/** Préserve le chemin et les variables historiques du stockage des messages vocaux. */
 @Injectable()
 export class VoiceStorageService extends MediaStorageService {
   constructor(config: ConfigService) {

@@ -47,7 +47,7 @@ const acceptedAudioTypes = new Set([
   "audio/webm",
 ]);
 
-// Store incoming files outside the app directory and remove them after processing.
+// Le fichier reste temporaire jusqu'à son transfert vers le stockage configuré.
 const voiceUploadOptions = {
   storage: diskStorage({
     destination: tmpdir(),
@@ -65,6 +65,7 @@ const voiceUploadOptions = {
     file: { mimetype: string },
     callback: (error: Error | null, acceptFile: boolean) => void,
   ) => {
+    // Certains navigateurs ajoutent des paramètres MIME tels que `codecs=opus`.
     const mimeType = file.mimetype.split(";")[0].trim().toLowerCase();
     if (!acceptedAudioTypes.has(mimeType)) {
       callback(
@@ -85,6 +86,7 @@ class CleanupUploadedFileInterceptor implements NestInterceptor {
       .getRequest<{ file?: Express.Multer.File }>();
     return next.handle().pipe(
       finalize(() => {
+        // finalize s'exécute aussi si le service ou l'envoi de la réponse échoue.
         if (request.file?.path) {
           void rm(request.file.path, { force: true }).catch(() => undefined);
         }

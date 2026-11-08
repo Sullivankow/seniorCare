@@ -51,7 +51,7 @@ export class VoiceMessagesService {
       );
       const summary = this.toSummary(message);
 
-      // Only metadata is broadcast; audio remains behind the authenticated download route.
+      // Seules les métadonnées sont diffusées ; l'audio reste derrière la route authentifiée.
       this.realtime.emitToSenior(
         seniorId,
         RealtimeEvents.VOICE_MESSAGE_CREATED,
@@ -59,6 +59,7 @@ export class VoiceMessagesService {
       );
       return summary;
     } catch (error) {
+      // Retire le fichier orphelin si l'écriture des métadonnées échoue après le transfert.
       if (stored) await this.storage.remove(storageKey).catch(() => undefined);
       throw error;
     }
@@ -78,6 +79,7 @@ export class VoiceMessagesService {
   }
 
   async deleteForFamily(seniorId: string, id: string, familyId: string) {
+    // Le lien est vérifié avant toute suppression de média ou de métadonnées.
     await this.links.assertLinked(familyId, seniorId);
     const message = await this.repo.findOne({ where: { id, seniorId } });
     if (!message) throw new NotFoundException("Message vocal introuvable.");
@@ -107,6 +109,7 @@ export class VoiceMessagesService {
   }
 
   private toSummary(message: VoiceMessage): VoiceMessageSummary {
+    // La clé interne ne doit jamais être envoyée aux clients.
     const { storageKey: _storageKey, ...summary } = message;
     return summary;
   }

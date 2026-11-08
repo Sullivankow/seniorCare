@@ -7,6 +7,7 @@ import { AuthService } from "./auth.service";
 import { AuthController } from "./auth.controller";
 import { JwtStrategy } from "./jwt.strategy";
 
+/** Configure les jetons partagés par les routes HTTP et la passerelle Socket.IO. */
 @Module({
   imports: [
     UsersModule,

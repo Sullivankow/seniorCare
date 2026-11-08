@@ -78,7 +78,7 @@ export class PhotosService {
       );
       const summary = this.toSummary(photo);
 
-      // The room receives metadata only; the image stays behind the authenticated route.
+      // La room ne reçoit que les métadonnées ; l'image reste derrière la route authentifiée.
       this.realtime.emitToSenior(
         seniorId,
         RealtimeEvents.PHOTO_CREATED,
@@ -86,6 +86,7 @@ export class PhotosService {
       );
       return summary;
     } catch (error) {
+      // Évite un fichier orphelin si l'enregistrement des métadonnées échoue.
       if (stored) await this.storage.remove(storageKey).catch(() => undefined);
       throw error;
     }
@@ -136,6 +137,7 @@ export class PhotosService {
   }
 
   private toSummary(photo: FamilyPhoto): PhotoSummary {
+    // Ne jamais exposer la clé de stockage ni l'identifiant interne de l'expéditeur.
     const {
       storageKey: _storageKey,
       uploadedByFamilyId: _uploadedByFamilyId,

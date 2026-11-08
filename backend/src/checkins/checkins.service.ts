@@ -42,7 +42,7 @@ export class CheckinsService {
   findLastForSeniors(seniorIds: string[]) {
     if (seniorIds.length === 0) return Promise.resolve([] as CheckIn[]);
 
-    // PostgreSQL DISTINCT ON returns the newest check-in for each senior in one query.
+    // DISTINCT ON récupère le dernier pointage de chaque senior en une requête PostgreSQL.
     return this.repo
       .createQueryBuilder("checkin")
       .distinctOn(["checkin.seniorId"])
@@ -64,6 +64,7 @@ export class CheckinsService {
     const result = await this.repo.delete({ id: checkInId, seniorId });
     if (!result.affected) throw new NotFoundException("Pointage introuvable.");
 
+    // Les écrans famille et senior recalculent leur état après cet événement.
     this.realtime.emitToSenior(seniorId, RealtimeEvents.CHECKIN_DELETED, {
       checkInId,
       seniorId,

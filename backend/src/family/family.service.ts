@@ -62,6 +62,7 @@ export class FamilyService {
     return this.checkins.findHistory(seniorId);
   }
 
+  /** Vérifie le lien familial avant de déléguer la suppression du pointage. */
   async deleteCheckIn(familyId: string, seniorId: string, checkInId: string) {
     await this.links.assertLinked(familyId, seniorId);
     await this.checkins.delete(seniorId, checkInId);
