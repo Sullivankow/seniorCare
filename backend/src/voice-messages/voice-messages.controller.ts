@@ -39,7 +39,13 @@ import { CreateVoiceMessageDto } from "./voice-message.dto";
 import { VoiceMessagesService } from "./voice-messages.service";
 
 const MAX_AUDIO_BYTES = 5 * 1024 * 1024;
-const acceptedAudioTypes = new Set(["audio/mp4", "audio/m4a", "audio/aac"]);
+const acceptedAudioTypes = new Set([
+  "audio/mp4",
+  "audio/m4a",
+  "audio/x-m4a",
+  "audio/aac",
+  "audio/webm",
+]);
 
 // Store incoming files outside the app directory and remove them after processing.
 const voiceUploadOptions = {
@@ -59,7 +65,8 @@ const voiceUploadOptions = {
     file: { mimetype: string },
     callback: (error: Error | null, acceptFile: boolean) => void,
   ) => {
-    if (!acceptedAudioTypes.has(file.mimetype)) {
+    const mimeType = file.mimetype.split(";")[0].trim().toLowerCase();
+    if (!acceptedAudioTypes.has(mimeType)) {
       callback(
         new BadRequestException("Format audio non pris en charge."),
         false,
@@ -122,7 +129,7 @@ export class VoiceMessagesController {
 
   @Get(":id/audio")
   @Roles(Role.SENIOR, Role.FAMILY)
-  @ApiProduces("audio/mp4")
+  @ApiProduces("audio/mp4", "audio/webm")
   @ApiOperation({
     summary: "Lit un message vocal après vérification des droits",
   })
