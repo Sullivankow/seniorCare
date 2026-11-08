@@ -95,6 +95,11 @@ export const familyApi = {
     }),
   checkins: (seniorId: string) =>
     request<CheckIn[]>("GET", `/family/seniors/${seniorId}/checkins`),
+  deleteCheckIn: (seniorId: string, checkInId: string) =>
+    request<void>(
+      "DELETE",
+      `/family/seniors/${seniorId}/checkins/${checkInId}`,
+    ),
   alerts: (seniorId: string) =>
     request<Alert[]>("GET", `/family/seniors/${seniorId}/alerts`),
 };

@@ -33,6 +33,7 @@ export default function FamilyHome() {
   // Temps réel : on recharge le tableau de bord à chaque évènement + pop-up pour les urgences
   useRealtime({
     [RealtimeEvents.CHECKIN_CREATED]: () => { void load(); },
+    [RealtimeEvents.CHECKIN_DELETED]: () => { void load(); },
     [RealtimeEvents.ALERT_RESOLVED]: () => { void load(); },
     [RealtimeEvents.ALERT_CREATED]: (p) => {
       void load();

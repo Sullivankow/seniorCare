@@ -1,9 +1,9 @@
-import { Injectable } from '@nestjs/common';
-import { LinksService } from '../links/links.service';
-import { UsersService } from '../users/users.service';
-import { CheckinsService } from '../checkins/checkins.service';
-import { AlertsService } from '../alerts/alerts.service';
-import { RealtimeGateway } from '../realtime/realtime.gateway';
+import { Injectable } from "@nestjs/common";
+import { LinksService } from "../links/links.service";
+import { UsersService } from "../users/users.service";
+import { CheckinsService } from "../checkins/checkins.service";
+import { AlertsService } from "../alerts/alerts.service";
+import { RealtimeGateway } from "../realtime/realtime.gateway";
 
 /** Logique « tableau de bord » de l'app FAMILLE : agrège utilisateurs, pointages et alertes. */
 @Injectable()
@@ -39,9 +39,10 @@ export class FamilyService {
           this.checkins.findLast(seniorId),
         ]);
         return {
-          senior: { id: seniorId, fullName: senior?.fullName ?? 'Inconnu' },
+          senior: { id: seniorId, fullName: senior?.fullName ?? "Inconnu" },
           lastCheckIn: lastCheckIn ?? null,
-          activeAlert: activeAlerts.find((a) => a.seniorId === seniorId) ?? null,
+          activeAlert:
+            activeAlerts.find((a) => a.seniorId === seniorId) ?? null,
           checkedInToday: !!lastCheckIn && lastCheckIn.createdAt >= startOfDay,
         };
       }),
@@ -51,6 +52,11 @@ export class FamilyService {
   async getCheckins(familyId: string, seniorId: string) {
     await this.links.assertLinked(familyId, seniorId);
     return this.checkins.findHistory(seniorId);
+  }
+
+  async deleteCheckIn(familyId: string, seniorId: string, checkInId: string) {
+    await this.links.assertLinked(familyId, seniorId);
+    await this.checkins.delete(seniorId, checkInId);
   }
 
   async getAlerts(familyId: string, seniorId: string) {
