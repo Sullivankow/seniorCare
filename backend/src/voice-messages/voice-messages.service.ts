@@ -77,6 +77,19 @@ export class VoiceMessagesService {
     return messages.map((message) => this.toSummary(message));
   }
 
+  async deleteForFamily(seniorId: string, id: string, familyId: string) {
+    await this.links.assertLinked(familyId, seniorId);
+    const message = await this.repo.findOne({ where: { id, seniorId } });
+    if (!message) throw new NotFoundException("Message vocal introuvable.");
+
+    await this.storage.remove(message.storageKey);
+    await this.repo.remove(message);
+    this.realtime.emitToSenior(seniorId, RealtimeEvents.VOICE_MESSAGE_DELETED, {
+      id,
+      seniorId,
+    });
+  }
+
   async openForUser(id: string, user: AuthUser) {
     const message = await this.repo.findOne({ where: { id } });
     if (!message) throw new NotFoundException("Message vocal introuvable.");

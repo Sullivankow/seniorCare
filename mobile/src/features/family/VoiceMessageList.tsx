@@ -1,17 +1,20 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Platform, StyleSheet, View } from 'react-native';
+import { Alert, Platform, StyleSheet, View } from 'react-native';
 import { preload, useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
 import { File, Paths } from 'expo-file-system';
 import { Mic } from 'lucide-react-native';
 import { AppText, Button, Card, ErrorText } from '../../components/ui';
+import { voiceMessagesApi } from '../../api/endpoints';
 import { API_URL } from '../../config';
 import { useAuth } from '../../context/AuthContext';
 import { VoiceMessage } from '../../types';
 import { colors, spacing } from '../../theme';
+import { getErrorMessage } from '../../utils/errorMessage';
 import { formatDateTime } from '../../utils/time';
 
 interface Props {
   readonly messages: readonly VoiceMessage[];
+  readonly onMessageDeleted: (messageId: string) => void;
 }
 
 function formatDuration(seconds: number) {
@@ -50,13 +53,15 @@ async function prepareAudioSource(
   return { source };
 }
 
-export function VoiceMessageList({ messages }: Props) {
+export function VoiceMessageList({ messages, onMessageDeleted }: Props) {
   const { token } = useAuth();
   // Un seul lecteur natif sert toute la liste, même quand plusieurs messages sont présents.
   const player = useAudioPlayer(null, { updateInterval: 1000, downloadFirst: true });
   const playerState = useAudioPlayerStatus(player);
   const [activeMessageId, setActiveMessageId] = useState<string | null>(null);
   const [playbackError, setPlaybackError] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [deletingMessageId, setDeletingMessageId] = useState<string | null>(null);
   const cachedAudioFile = useRef<File | null>(null);
 
   useEffect(() => {
@@ -94,6 +99,39 @@ export function VoiceMessageList({ messages }: Props) {
     }
   };
 
+  const deleteMessage = async (message: VoiceMessage) => {
+    if (!token || deletingMessageId) return;
+    setDeleteError(null);
+    setDeletingMessageId(message.id);
+    try {
+      if (activeMessageId === message.id) {
+        player.pause();
+        player.replace(null);
+        setActiveMessageId(null);
+      }
+      await voiceMessagesApi.deleteForFamily(message.seniorId, message.id);
+      onMessageDeleted(message.id);
+    } catch (error: unknown) {
+      setDeleteError(getErrorMessage(error));
+    } finally {
+      setDeletingMessageId(null);
+    }
+  };
+
+  const confirmDelete = (message: VoiceMessage) => {
+    const title = 'Supprimer ce message vocal ?';
+    const onConfirm = () => { void deleteMessage(message); };
+    if (Platform.OS === 'web') {
+      if (typeof window !== 'undefined' && window.confirm(title)) onConfirm();
+      return;
+    }
+
+    Alert.alert(title, 'Il sera supprimé pour tous les proches reliés.', [
+      { text: 'Annuler', style: 'cancel' },
+      { text: 'Supprimer', style: 'destructive', onPress: onConfirm },
+    ]);
+  };
+
   return (
     <View style={styles.section}>
       <View style={styles.heading}>
@@ -122,10 +160,17 @@ export function VoiceMessageList({ messages }: Props) {
               variant={isActive && playerState.playing ? 'warning' : 'success'}
               onPress={() => playMessage(message)}
             />
+            <Button
+              label="Supprimer"
+              variant="danger"
+              loading={deletingMessageId === message.id}
+              disabled={deletingMessageId !== null}
+              onPress={() => confirmDelete(message)}
+            />
           </Card>
         );
       })}
-      <ErrorText message={playbackError ?? playerState.error} />
+      <ErrorText message={deleteError ?? playbackError ?? playerState.error} />
     </View>
   );
 }

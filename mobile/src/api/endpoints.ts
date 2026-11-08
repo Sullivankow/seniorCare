@@ -57,6 +57,11 @@ export const voiceMessagesApi = {
       "GET",
       `/family/seniors/${seniorId}/voice-messages`,
     ),
+  deleteForFamily: (seniorId: string, messageId: string) =>
+    request<void>(
+      "DELETE",
+      `/family/seniors/${seniorId}/voice-messages/${messageId}`,
+    ),
 };
 
 export const familyPhotosApi = {

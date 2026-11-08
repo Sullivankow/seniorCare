@@ -46,6 +46,7 @@ export default function SeniorHistoryScreen() {
     [RealtimeEvents.ALERT_CREATED]: () => { void load(); },
     [RealtimeEvents.ALERT_RESOLVED]: () => { void load(); },
     [RealtimeEvents.VOICE_MESSAGE_CREATED]: () => { void load(); },
+    [RealtimeEvents.VOICE_MESSAGE_DELETED]: () => { void load(); },
   });
 
   return (
@@ -73,7 +74,12 @@ export default function SeniorHistoryScreen() {
           </Card>
         ),
       )}
-      <VoiceMessageList messages={voiceMessages} />
+      <VoiceMessageList
+        messages={voiceMessages}
+        onMessageDeleted={(messageId) => {
+          setVoiceMessages((current) => current.filter((message) => message.id !== messageId));
+        }}
+      />
     </Screen>
   );
 }

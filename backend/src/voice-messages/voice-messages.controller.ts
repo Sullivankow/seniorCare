@@ -3,6 +3,7 @@ import {
   Body,
   CallHandler,
   Controller,
+  Delete,
   ExecutionContext,
   Get,
   Injectable,
@@ -163,5 +164,15 @@ export class FamilyVoiceMessagesController {
     @CurrentUser() user: AuthUser,
   ) {
     return this.voiceMessages.listForFamily(seniorId, user.id);
+  }
+
+  @Delete(":seniorId/voice-messages/:id")
+  @ApiOperation({ summary: "Supprime un message vocal d’un senior lié" })
+  delete(
+    @Param("seniorId", ParseUUIDPipe) seniorId: string,
+    @Param("id", ParseUUIDPipe) id: string,
+    @CurrentUser() user: AuthUser,
+  ) {
+    return this.voiceMessages.deleteForFamily(seniorId, id, user.id);
   }
 }
