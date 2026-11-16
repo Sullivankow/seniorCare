@@ -61,14 +61,13 @@ export default function SeniorDirectory() {
 
     return (
         <Screen
-            backgroundColor={colors.seniorBg}
             refreshControl={
                 <RefreshControl refreshing={refreshing} onRefresh={async () => { setRefreshing(true); await load(); setRefreshing(false); }} />
             }
         >
             <AppText variant="small" color={colors.seniorOk}>VOS CONTACTS</AppText>
-            <AppText variant="title" color={colors.white}>Répertoire</AppText>
-            <AppText color={colors.white}>Vos proches et les personnes que vous souhaitez joindre.</AppText>
+            <AppText variant="title">Répertoire</AppText>
+            <AppText>Vos proches et les personnes que vous souhaitez joindre.</AppText>
             <ErrorText message={error} />
 
             <Button
@@ -88,7 +87,7 @@ export default function SeniorDirectory() {
                 </Card>
             )}
 
-            {contacts === null && !error && <ActivityIndicator color={colors.white} />}
+            {contacts === null && !error && <ActivityIndicator color={colors.primary} />}
             {contacts?.length === 0 && (
                 <Card>
                     <AppText variant="title">Votre répertoire est vide</AppText>

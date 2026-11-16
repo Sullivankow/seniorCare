@@ -144,7 +144,7 @@ export function VoiceMessageRecorder({ visible, onClose, onMessageSent }: Props)
         <View style={styles.header}>
           <View style={styles.heading}>
             <AppText variant="small" color={colors.seniorOk}>MESSAGE À VOTRE FAMILLE</AppText>
-            <AppText variant="title" color={colors.white}>Message vocal</AppText>
+            <AppText variant="title">Message vocal</AppText>
           </View>
           <Button label="Fermer" variant="ghost" onPress={() => { void close(); }} disabled={saving} />
         </View>
@@ -153,15 +153,15 @@ export function VoiceMessageRecorder({ visible, onClose, onMessageSent }: Props)
           {recorderState.isRecording && (
             <>
               <View style={styles.micIcon}><Mic size={40} color={colors.white} /></View>
-              <AppText variant="huge" color={colors.white} center>{formatDuration(durationSeconds)}</AppText>
-              <AppText color={colors.white} center>Enregistrement en cours</AppText>
+              <AppText variant="huge" center>{formatDuration(durationSeconds)}</AppText>
+              <AppText center>Enregistrement en cours</AppText>
               <Button label="Arrêter l’enregistrement" variant="danger" onPress={() => { void stopRecording(); }} />
             </>
           )}
           {!recorderState.isRecording && Boolean(recordingUri) && (
             <>
-              <AppText color={colors.white} center>Écoutez votre message avant de l’envoyer.</AppText>
-              <AppText variant="title" color={colors.white} center>{formatDuration(durationSeconds)}</AppText>
+              <AppText center>Écoutez votre message avant de l’envoyer.</AppText>
+              <AppText variant="title" center>{formatDuration(durationSeconds)}</AppText>
               <Button
                 label={playerState.playing ? 'Mettre en pause' : 'Écouter le message'}
                 variant="success"
@@ -174,13 +174,13 @@ export function VoiceMessageRecorder({ visible, onClose, onMessageSent }: Props)
           {!recorderState.isRecording && !recordingUri && (
             <>
               <View style={styles.micIcon}><Mic size={40} color={colors.white} /></View>
-              <AppText color={colors.white} center>Appuyez pour enregistrer un message de 60 secondes maximum.</AppText>
+              <AppText center>Appuyez pour enregistrer un message de 60 secondes maximum.</AppText>
               <Button label="Commencer l’enregistrement" variant="success" onPress={() => { void startRecording(); }} />
             </>
           )}
           <ErrorText message={error} />
         </View>
-        <AppText variant="small" color={colors.white} center>
+        <AppText variant="small" center>
           Votre message est envoyé uniquement aux proches reliés à votre compte.
         </AppText>
       </Screen>

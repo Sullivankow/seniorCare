@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Linking, Modal, StyleSheet, View } from 'react-native';
-import { Phone } from 'lucide-react-native';
 import { AppText, Button, Card, ErrorText, Screen } from '../../components/ui';
 import { directoryApi } from '../../api/endpoints';
 import { DirectoryContact } from '../../types';
@@ -54,12 +53,12 @@ export function CallContactPicker({ visible, onClose }: Props) {
                 <View style={styles.header}>
                     <View style={styles.title}>
                         <AppText variant="small" color={colors.seniorOk}>VOS CONTACTS</AppText>
-                        <AppText variant="title" color={colors.white}>Qui voulez-vous appeler ?</AppText>
+                        <AppText variant="title">Qui voulez-vous appeler ?</AppText>
                     </View>
                     <Button label="Fermer" variant="ghost" onPress={onClose} />
                 </View>
 
-                {loading && <ActivityIndicator color={colors.white} />}
+                {loading && <ActivityIndicator color={colors.primary} />}
                 {contacts?.length === 0 && (
                     <Card>
                         <AppText variant="title">Votre répertoire est vide</AppText>

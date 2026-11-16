@@ -15,11 +15,13 @@ export default function SeniorLayout() {
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: colors.seniorOk,
-        tabBarInactiveTintColor: colors.white,
+        tabBarInactiveTintColor: colors.inkSoft,
         tabBarLabelStyle: { fontSize: font.small, fontWeight: '600' },
         tabBarStyle: {
-          backgroundColor: colors.seniorPanel,
-          borderTopColor: colors.seniorLine,
+          backgroundColor: colors.surface,
+          borderTopColor: colors.line,
+          borderTopWidth: 1,
+          elevation: 0,
           paddingTop: 6,
           paddingBottom: 6,
         },

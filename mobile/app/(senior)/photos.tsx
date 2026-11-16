@@ -69,8 +69,8 @@ export default function SeniorPhotosScreen() {
   };
 
   return (
-    <Screen backgroundColor={colors.seniorBg}>
-      <AppText variant="title" color={colors.white}>Ma famille en photos</AppText>
+    <Screen>
+      <AppText variant="title">Ma famille en photos</AppText>
       <View style={styles.tabs}>
         <AlbumTab label="Photo du jour" selected={view === 'today'} onPress={() => selectView('today')} />
         <AlbumTab label="Toutes" selected={view === 'all'} onPress={() => selectView('all')} />
@@ -122,15 +122,15 @@ function AlbumTab({ label, selected, onPress }: { readonly label: string; readon
       onPress={onPress}
       style={[styles.tab, selected && styles.selectedTab]}
     >
-      <AppText color={selected ? colors.ink : colors.white} style={styles.tabLabel}>{label}</AppText>
+      <AppText color={selected ? colors.white : colors.inkSoft} style={styles.tabLabel}>{label}</AppText>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
   tabs: { flexDirection: 'row', gap: spacing.sm },
-  tab: { flex: 1, minHeight: 52, borderWidth: 2, borderColor: colors.seniorLine, borderRadius: 8, alignItems: 'center', justifyContent: 'center', paddingHorizontal: spacing.xs },
-  selectedTab: { backgroundColor: colors.white, borderColor: colors.white },
+  tab: { flex: 1, minHeight: 52, borderWidth: 1, borderColor: colors.line, borderRadius: 8, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center', paddingHorizontal: spacing.xs },
+  selectedTab: { backgroundColor: colors.primary, borderColor: colors.primary },
   tabLabel: { fontWeight: '700', textAlign: 'center' },
   details: { gap: spacing.md, paddingTop: spacing.md },
   navigation: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: spacing.sm },

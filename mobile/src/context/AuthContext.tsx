@@ -17,14 +17,14 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 /** Gère la session (token + profil) et la persiste de façon sécurisée sur le téléphone. */
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export function AuthProvider({ children }: { readonly children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Au démarrage : on restaure la session si elle existe (le senior reste connecté)
   useEffect(() => {
-    (async () => {
+    void (async () => {
       try {
         const raw = await SecureStore.getItemAsync(STORAGE_KEY);
         if (raw) {
@@ -33,6 +33,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setToken(session.accessToken);
           setUser(session.user);
         }
+      } catch {
+        // Une session illisible ou un stockage indisponible laisse l'utilisateur déconnecté.
       } finally {
         setLoading(false);
       }

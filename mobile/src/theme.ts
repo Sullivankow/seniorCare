@@ -3,30 +3,32 @@
  * Pensé pour les seniors : texte large, fort contraste, grandes zones tactiles.
  */
 export const colors = {
-  bg: "#F2F5F7",
+  bg: "#F4F7F8",
   surface: "#FFFFFF",
-  ink: "#14212B",
-  inkSoft: "#52606B",
-  line: "#DCE3E8",
+  ink: "#15252D",
+  inkSoft: "#52636C",
+  line: "#DCE5E8",
   primary: "#0E5A6B", // bleu-vert profond
-  ok: "#1B8A4B",
-  okSoft: "#E3F4EA",
-  warn: "#A85D00",
-  warnSoft: "#FBEBD3",
-  danger: "#C62828",
-  dangerSoft: "#FBE3E3",
+  primarySoft: "#E4F1F4",
+  ok: "#18794E",
+  okSoft: "#E5F3EA",
+  warn: "#8A4B00",
+  warnSoft: "#FFF1D8",
+  danger: "#B42318",
+  dangerSoft: "#FDE9E7",
   white: "#FFFFFF",
-  seniorBg: "#080D1C",
-  seniorPanel: "#151C30",
-  seniorLine: "#28334A",
-  seniorOk: "#0B956D",
-  seniorBlue: "#2862E8",
-  seniorPurple: "#922CE0",
-  seniorOrange: "#E88718",
+  // Aliases senior : mêmes surfaces que l'app, avec des aplats d'action à contraste élevé.
+  seniorBg: "#F4F7F8",
+  seniorPanel: "#0E5A6B",
+  seniorLine: "#DCE5E8",
+  seniorOk: "#18794E",
+  seniorBlue: "#0E5A6B",
+  seniorPurple: "#1D737C",
+  seniorOrange: "#286878",
 };
 
 export const spacing = { xs: 4, sm: 8, md: 16, lg: 24, xl: 32 };
-export const radius = { sm: 10, md: 16, lg: 24, pill: 999 };
+export const radius = { sm: 4, md: 8, lg: 8, pill: 999 };
 
 export const font = {
   body: 18,

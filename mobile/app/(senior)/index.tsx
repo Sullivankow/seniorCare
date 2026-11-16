@@ -114,13 +114,12 @@ export default function SeniorHome() {
   return (
     <>
       <Screen
-        backgroundColor={colors.seniorBg}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={async () => { setRefreshing(true); await load(); setRefreshing(false); }} />
         }
       >
         <SeniorStatusPanel />
-        <AppText variant="title" color={colors.white}>Bonjour {firstName}</AppText>
+        <AppText variant="title">Bonjour {firstName}</AppText>
 
         {activeAlert ? (
           <Card tone="danger">
@@ -141,7 +140,7 @@ export default function SeniorHome() {
                 ))}
               </View>
             ))}
-            <AppText center color={colors.white}>
+            <AppText center>
               {last ? `Dernier message envoyé ${timeAgo(last.createdAt)}` : "Appuyez pour dire à votre famille que tout va bien."}
             </AppText>
             <Button variant="warning" label="Je ne suis pas très en forme" onPress={() => sendNotGreat.run()} loading={sendNotGreat.loading} />

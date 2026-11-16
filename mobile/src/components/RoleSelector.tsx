@@ -34,5 +34,5 @@ export function RoleSelector({ value, onChange }: Readonly<{ value: Role; onChan
 
 const styles = StyleSheet.create({
   option: { borderWidth: 2, borderColor: colors.line, borderRadius: radius.md, padding: 16, backgroundColor: colors.surface },
-  selected: { borderColor: colors.primary, backgroundColor: '#E4F1F4' },
+  selected: { borderColor: colors.primary, backgroundColor: colors.primarySoft },
 });

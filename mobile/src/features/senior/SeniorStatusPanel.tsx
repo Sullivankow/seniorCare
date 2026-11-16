@@ -40,5 +40,5 @@ const styles = StyleSheet.create({
     },
     date: { alignSelf: 'flex-start' },
     time: { fontSize: font.huge + 8, lineHeight: font.huge + 12, fontWeight: '800', letterSpacing: 3 },
-    footer: { borderTopColor: colors.seniorLine, borderTopWidth: 1, marginTop: spacing.sm, paddingTop: spacing.sm, width: '100%' },
+    footer: { borderTopColor: 'rgba(255, 255, 255, 0.32)', borderTopWidth: 1, marginTop: spacing.sm, paddingTop: spacing.sm, width: '100%' },
 });

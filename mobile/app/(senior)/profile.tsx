@@ -15,8 +15,8 @@ export default function SeniorProfile() {
     ]);
 
   return (
-    <Screen backgroundColor={colors.seniorBg}>
-      <AppText variant="title" color={colors.white}>Mon profil</AppText>
+    <Screen>
+      <AppText variant="title">Mon profil</AppText>
       <Card>
         <AppText variant="title">{user?.fullName}</AppText>
         <AppText>{user?.email}</AppText>
