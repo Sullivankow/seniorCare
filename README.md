@@ -5,10 +5,10 @@ Application de veille bienveillante entre des seniors et leur famille.
 - Le **senior** appuie sur « Je vais bien » (ou « Pas très en forme »), ou maintient le bouton **URGENCE**.
 - Sa **famille** voit l'état en **temps réel** sur son propre écran, reçoit les urgences et peut les clôturer.
 
-| Partie     | Technologies                                                                       |
-| ---------- | ---------------------------------------------------------------------------------- |
-| `mobile/`  | React Native · Expo SDK 58 · Expo Go · expo-router · TypeScript · Socket.IO client |
-| `backend/` | NestJS 11 · TypeORM · PostgreSQL · JWT · Swagger · Socket.IO                       |
+| Partie     | Technologies                                                                                   |
+| ---------- | ---------------------------------------------------------------------------------------------- |
+| `mobile/`  | React Native · Expo SDK 58 · Expo Go · expo-router · expo-blur · TypeScript · Socket.IO client |
+| `backend/` | NestJS 11 · TypeORM · PostgreSQL · JWT · Swagger · Socket.IO                                   |
 
 ## État actuel du projet
 
@@ -16,15 +16,17 @@ Application de veille bienveillante entre des seniors et leur famille.
 
 - **Comptes et accès** : inscription en tant que senior ou membre de la famille, connexion par e-mail et mot de passe, déconnexion et restauration de la session au redémarrage de l'app.
 - **Rôle senior** : code d'invitation unique à 6 caractères, pointage « Je vais bien » ou « Pas très en forme », affichage du dernier pointage et bouton SOS déclenché par un appui long de 1,5 seconde. Le senior peut annuler une alerte active.
+- **Navigation et apparence** : barre d'onglets flottante avec fond flouté, accès à l'accueil, aux photos, aux contacts, aux réglages et au profil. Le mode clair/sombre est mémorisé sur l'appareil.
+- **Réglages** : activation du mode sombre, rubrique confidentialité et mentions légales. Les coordonnées de l'éditeur, l'hébergement, les durées de conservation et les modalités d'exercice des droits restent à renseigner avant publication.
 - **Profil et répertoire du senior** : consultation de son nom, de son e-mail et de son code d'invitation; liste des proches liés et ajout de contacts personnels avec téléphone et e-mail. Les actions « Appeler » et « Envoyer un e-mail » ouvrent l'application correspondante du téléphone.
 - **Rôle famille** : rattachement à un senior avec son code, tableau de bord des seniors suivis, état du jour et dernière nouvelle, historique chronologique des pointages et alertes, messages vocaux reçus et clôture d'une urgence.
-- **Album photo familial** : envoi de photos et de petits mots par les proches, photo surprise du jour, souvenirs datés, cœur du senior et lecture vocale des messages.
+- **Album photo familial** : envoi de photos et de petits mots par les proches, photo surprise du jour, souvenirs datés, cœur du senior et lecture vocale des messages. La liste famille est virtualisée côté mobile; l'API renvoie au plus les 100 photos les plus récentes.
 - **Alertes et temps réel** : une alerte active à la fois par senior; les pointages, nouvelles alertes et clôtures sont transmis aux appareils connectés concernés via Socket.IO. Le tableau de bord affiche une alerte urgente immédiatement.
 - **Protection des données** : mots de passe hachés, accès API par jeton JWT, contrôle des rôles et vérification du rattachement famille-senior avant l'accès à ses données.
 
 ### Systèmes et outils en place
 
-- **Application mobile** : React Native avec Expo et Expo Router; interfaces distinctes selon le rôle; session conservée dans le stockage sécurisé du téléphone (`SecureStore`).
+- **Application mobile** : React Native avec Expo et Expo Router; interfaces distinctes selon le rôle; session conservée dans le stockage sécurisé du téléphone (`SecureStore`). Le choix clair/sombre est centralisé dans `AppearanceContext` et persisté localement (`SecureStore` sur mobile, `localStorage` sur le web).
 - **API** : NestJS avec routes REST sous `/api`, validation des entrées et documentation interactive Swagger sous `/docs`.
 - **Base de données** : PostgreSQL, base `seniorcare`, accès via TypeORM. Les tables sont synchronisées au démarrage selon la configuration `DB_SYNCHRONIZE`.
 - **Communication instantanée** : Socket.IO, namespace `/realtime`, authentifié avec le JWT. Cela nécessite que l'app soit connectée; ce ne sont pas des notifications lorsque l'app est fermée.
@@ -37,6 +39,7 @@ Application de veille bienveillante entre des seniors et leur famille.
 - Collecte et envoi de la position GPS depuis l'app lors d'un SOS (l'API accepte déjà des coordonnées facultatives).
 - Fuseau horaire et heure de rappel configurables par utilisateur.
 - Récupération de mot de passe et suppression de compte. Le profil est consultable, mais sa modification n'est pas encore implémentée.
+- Compléter les mentions légales et la politique de confidentialité avec les informations vérifiées de l'éditeur avant toute publication.
 - Migrations de base de données, tests automatisés, intégration continue et déploiement de production.
 
 ---
@@ -167,17 +170,18 @@ src/
 
 ```
 app/                        Routes (expo-router) : fichiers = écrans, volontairement très fins
-├── _layout.tsx             Fournit la session (AuthProvider)
+├── _layout.tsx             Fournit la session et l'apparence (AuthProvider, AppearanceProvider)
 ├── index.tsx               Aiguillage : login / interface senior / interface famille
 ├── (auth)/                 login, register
-├── (senior)/               Accueil, album photo, répertoire et profil
+├── (senior)/               Accueil, album photo, répertoire, profil et réglages
 └── (family)/               Tableau de bord, ajout, historique et album par senior
 src/
 ├── api/                    client.ts (fetch + token + erreurs), endpoints.ts (1 objet par domaine)
-├── context/AuthContext     Session persistée dans SecureStore
+├── context/                AuthContext (session) et AppearanceContext (thème)
 ├── hooks/                  useRealtime (Socket.IO), useAsyncAction (loading/erreur)
 ├── components/ui/          Design system : Screen, AppText, Button, Card, Input, ErrorText
 ├── features/senior|family/ Composants métier (CheckInButton, SosButton, SeniorCard…)
+├── features/settings/      Gabarit partagé des pages d'information des réglages
 ├── theme.ts                Couleurs, tailles, espacements (seule source de style)
 └── config.ts · types.ts · utils/
 ```
