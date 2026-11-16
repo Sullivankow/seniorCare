@@ -1,12 +1,14 @@
 import React from 'react';
 import { Redirect, Tabs } from 'expo-router';
-import { ContactRound, House, Images, UserRound } from 'lucide-react-native';
+import { ContactRound, House, Images, Settings2, UserRound } from 'lucide-react-native';
 import { useAuth } from '../../src/context/AuthContext';
-import { colors, font } from '../../src/theme';
+import { useAppearance } from '../../src/context/AppearanceContext';
+import { font } from '../../src/theme';
 
 /** Garde : seuls les comptes SENIOR accèdent à cette interface. */
 export default function SeniorLayout() {
   const { user, loading } = useAuth();
+  const { colors } = useAppearance();
   if (loading) return null;
   if (!user) return <Redirect href="/login" />;
   if (user.role !== 'SENIOR') return <Redirect href="/" />;
@@ -31,6 +33,7 @@ export default function SeniorLayout() {
       <Tabs.Screen name="photos" options={{ title: 'Photos', tabBarIcon: ({ color, size }) => <Images color={color} size={size} /> }} />
       <Tabs.Screen name="directory" options={{ title: 'Répertoire', tabBarIcon: ({ color, size }) => <ContactRound color={color} size={size} /> }} />
       <Tabs.Screen name="profile" options={{ title: 'Profil', tabBarIcon: ({ color, size }) => <UserRound color={color} size={size} /> }} />
+      <Tabs.Screen name="settings" options={{ title: 'Paramètres', tabBarIcon: ({ color, size }) => <Settings2 color={color} size={size} /> }} />
     </Tabs>
   );
 }

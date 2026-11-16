@@ -1,6 +1,7 @@
 import React from 'react';
 import { Image, ImageResizeMode, StyleSheet } from 'react-native';
 import { familyPhotosApi } from '../../api/endpoints';
+import { useAppearance } from '../../context/AppearanceContext';
 import { useAuth } from '../../context/AuthContext';
 
 interface Props {
@@ -13,6 +14,7 @@ interface Props {
 /** Images are fetched through the same authenticated API as the album metadata. */
 export function PhotoImage({ photoId, label, height, resizeMode = 'cover' }: Props) {
   const { token } = useAuth();
+  const { colors } = useAppearance();
 
   return (
     <Image
@@ -22,11 +24,11 @@ export function PhotoImage({ photoId, label, height, resizeMode = 'cover' }: Pro
         headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       }}
       resizeMode={resizeMode}
-      style={[styles.image, { height }]}
+      style={[styles.image, { height, backgroundColor: colors.line }]}
     />
   );
 }
 
 const styles = StyleSheet.create({
-  image: { width: '100%', backgroundColor: '#DCE3E8' },
+  image: { width: '100%' },
 });

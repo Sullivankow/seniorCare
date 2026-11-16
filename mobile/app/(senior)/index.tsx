@@ -15,12 +15,14 @@ import { useAsyncAction } from '../../src/hooks/useAsyncAction';
 import { RealtimeEvents } from '../../src/api/events';
 import { timeAgo } from '../../src/utils/time';
 import { Alert, CheckIn } from '../../src/types';
-import { colors, spacing } from '../../src/theme';
+import { useAppearance } from '../../src/context/AppearanceContext';
+import { spacing } from '../../src/theme';
 import { getErrorMessage } from '../../src/utils/errorMessage';
 
 /** Tableau de bord senior : actions principales et urgence accessibles en un toucher. */
 export default function SeniorHome() {
   const { user } = useAuth();
+  const { colors } = useAppearance();
   const { width } = useWindowDimensions();
   const [last, setLast] = useState<CheckIn | null>(null);
   const [activeAlert, setActiveAlert] = useState<Alert | null>(null);

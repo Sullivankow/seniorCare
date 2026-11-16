@@ -1,7 +1,8 @@
 import React from 'react';
 import { RefreshControlProps, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { colors, spacing } from '../../theme';
+import { useAppearance } from '../../context/AppearanceContext';
+import { spacing } from '../../theme';
 
 interface Props {
   children: React.ReactNode;
@@ -14,8 +15,9 @@ interface Props {
 
 /** Conteneur d'écran standard : zone sûre, fond, marges, scroll. */
 export function Screen({ children, refreshControl, fixed, backgroundColor }: Readonly<Props>) {
+  const { colors } = useAppearance();
   return (
-    <SafeAreaView style={[styles.safe, backgroundColor && { backgroundColor }]}>
+    <SafeAreaView style={[styles.safe, { backgroundColor: backgroundColor ?? colors.bg }]}>
       {fixed ? (
         <View style={styles.content}>{children}</View>
       ) : (
@@ -28,6 +30,6 @@ export function Screen({ children, refreshControl, fixed, backgroundColor }: Rea
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.bg },
+  safe: { flex: 1 },
   content: { padding: spacing.lg, gap: spacing.md, flexGrow: 1 },
 });

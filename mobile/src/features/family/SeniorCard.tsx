@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleProp, ViewStyle } from 'react-native';
 import { SeniorSummary } from '../../types';
-import { colors } from '../../theme';
+import { useAppearance } from '../../context/AppearanceContext';
 import { timeAgo } from '../../utils/time';
 import { AppText, Button, Card } from '../../components/ui';
 
@@ -17,6 +17,7 @@ interface Props {
  * Priorité d'affichage : urgence > pas bien > rien reçu aujourd'hui > tout va bien.
  */
 export function SeniorCard({ summary, onOpen, onResolveAlert, style }: Props) {
+  const { colors } = useAppearance();
   const { senior, lastCheckIn, activeAlert, checkedInToday } = summary;
 
   let tone: 'ok' | 'warn' | 'danger' = 'ok';

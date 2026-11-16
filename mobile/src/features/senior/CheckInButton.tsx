@@ -1,17 +1,18 @@
 import React from 'react';
 import { ActivityIndicator, Pressable, StyleSheet } from 'react-native';
-import { colors } from '../../theme';
+import { useAppearance } from '../../context/AppearanceContext';
 import { AppText } from '../../components/ui';
 
 /** Gros bouton rond « Je vais bien » : l'action principale de l'app senior. */
-export function CheckInButton({ onPress, loading, doneToday }: { onPress: () => void; loading: boolean; doneToday: boolean }) {
+export function CheckInButton({ onPress, loading, doneToday }: Readonly<{ onPress: () => void; loading: boolean; doneToday: boolean }>) {
+  const { colors } = useAppearance();
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel="Je vais bien"
       onPress={onPress}
       disabled={loading}
-      style={({ pressed }) => [styles.button, pressed && { transform: [{ scale: 0.97 }] }]}
+      style={({ pressed }) => [styles.button, { backgroundColor: colors.ok }, pressed && { transform: [{ scale: 0.97 }] }]}
     >
       {loading ? (
         <ActivityIndicator size="large" color={colors.white} />
@@ -37,7 +38,6 @@ const styles = StyleSheet.create({
     width: 260,
     height: 260,
     borderRadius: 130,
-    backgroundColor: colors.ok,
     alignItems: 'center',
     justifyContent: 'center',
     padding: 24,

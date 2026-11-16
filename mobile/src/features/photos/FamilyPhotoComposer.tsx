@@ -4,7 +4,8 @@ import * as ImagePicker from 'expo-image-picker';
 import { AppText, Button, Card, ErrorText, Input } from '../../components/ui';
 import { familyPhotosApi } from '../../api/endpoints';
 import { useAsyncAction } from '../../hooks/useAsyncAction';
-import { colors, spacing } from '../../theme';
+import { useAppearance } from '../../context/AppearanceContext';
+import { spacing } from '../../theme';
 
 interface Props {
   readonly seniorId: string;
@@ -12,6 +13,7 @@ interface Props {
 }
 
 export function FamilyPhotoComposer({ seniorId, onUploaded }: Props) {
+  const { colors } = useAppearance();
   const [asset, setAsset] = useState<ImagePicker.ImagePickerAsset | null>(null);
   const [caption, setCaption] = useState('');
   const [memoryDate, setMemoryDate] = useState('');
@@ -67,7 +69,7 @@ export function FamilyPhotoComposer({ seniorId, onUploaded }: Props) {
       <View style={styles.content}>
         <AppText variant="title">Ajouter une photo</AppText>
         {asset ? (
-          <Image source={{ uri: asset.uri }} resizeMode="cover" style={styles.preview} />
+          <Image source={{ uri: asset.uri }} resizeMode="cover" style={[styles.preview, { backgroundColor: colors.line }]} />
         ) : (
           <Button label="Choisir une photo" onPress={() => void choosePhoto()} variant="ghost" />
         )}
@@ -113,7 +115,7 @@ export function FamilyPhotoComposer({ seniorId, onUploaded }: Props) {
 
 const styles = StyleSheet.create({
   content: { gap: spacing.md },
-  preview: { width: '100%', height: 220, borderRadius: 8, backgroundColor: colors.line },
+  preview: { width: '100%', height: 220, borderRadius: 8 },
   captionInput: { minHeight: 96, paddingTop: 14 },
   switchRow: { minHeight: 56, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: spacing.md },
   switchLabel: { flex: 1 },

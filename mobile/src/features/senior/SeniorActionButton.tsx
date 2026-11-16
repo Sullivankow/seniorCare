@@ -1,7 +1,8 @@
 import React from 'react';
 import { ActivityIndicator, Pressable, StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
 import { AppText } from '../../components/ui';
-import { colors, font, radius, spacing } from '../../theme';
+import { useAppearance } from '../../context/AppearanceContext';
+import { font, radius, spacing } from '../../theme';
 
 interface Props {
     readonly title: string;
@@ -16,6 +17,7 @@ interface Props {
 }
 
 export function SeniorActionButton({ title, subtitle, icon, color, onPress, loading, trailing, accessibilityLabel, style }: Props) {
+    const { colors } = useAppearance();
     let trailingContent: React.ReactNode = null;
     if (loading) trailingContent = <ActivityIndicator color={colors.white} />;
     else if (trailing) trailingContent = trailing;

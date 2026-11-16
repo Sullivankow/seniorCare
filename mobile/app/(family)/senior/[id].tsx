@@ -8,7 +8,8 @@ import { useRealtime } from '../../../src/hooks/useRealtime';
 import { RealtimeEvents } from '../../../src/api/events';
 import { formatDateTime } from '../../../src/utils/time';
 import { Alert, CheckIn, VoiceMessage } from '../../../src/types';
-import { colors, radius } from '../../../src/theme';
+import { useAppearance } from '../../../src/context/AppearanceContext';
+import { radius } from '../../../src/theme';
 import { getErrorMessage } from '../../../src/utils/errorMessage';
 import { VoiceMessageList } from '../../../src/features/family/VoiceMessageList';
 
@@ -26,6 +27,7 @@ interface SwipeToDeleteProps {
 }
 
 function SwipeToDelete({ children, disabled, onDelete }: SwipeToDeleteProps) {
+  const { colors } = useAppearance();
   const translateX = useRef(new Animated.Value(0)).current;
   const [isOpen, setIsOpen] = useState(false);
   const closeSwipe = useCallback(() => {
@@ -78,7 +80,7 @@ function SwipeToDelete({ children, disabled, onDelete }: SwipeToDeleteProps) {
         accessibilityLabel="Supprimer ce pointage"
         disabled={disabled}
         onPress={deleteFromCard}
-        style={styles.swipeDeleteAction}
+        style={[styles.swipeDeleteAction, { backgroundColor: colors.danger }]}
       >
         <Trash2 size={22} color={colors.white} />
       </Pressable>
@@ -96,6 +98,7 @@ function SwipeToDelete({ children, disabled, onDelete }: SwipeToDeleteProps) {
 
 export default function SeniorHistoryScreen() {
   const { id, name } = useLocalSearchParams<{ id: string; name?: string }>();
+  const { colors } = useAppearance();
   const [entries, setEntries] = useState<Entry[]>([]);
   const [voiceMessages, setVoiceMessages] = useState<VoiceMessage[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -207,7 +210,6 @@ const styles = StyleSheet.create({
     width: SWIPE_ACTION_WIDTH,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.danger,
   },
   swipeForeground: { zIndex: 1 },
 });

@@ -3,7 +3,8 @@ import { ActivityIndicator, Linking, Modal, StyleSheet, View } from 'react-nativ
 import { AppText, Button, Card, ErrorText, Screen } from '../../components/ui';
 import { directoryApi } from '../../api/endpoints';
 import { DirectoryContact } from '../../types';
-import { colors, spacing } from '../../theme';
+import { useAppearance } from '../../context/AppearanceContext';
+import { spacing } from '../../theme';
 import { getErrorMessage } from '../../utils/errorMessage';
 
 interface Props {
@@ -12,6 +13,7 @@ interface Props {
 }
 
 export function CallContactPicker({ visible, onClose }: Props) {
+    const { colors } = useAppearance();
     const [contacts, setContacts] = useState<DirectoryContact[] | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
@@ -49,7 +51,7 @@ export function CallContactPicker({ visible, onClose }: Props) {
 
     return (
         <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
-            <Screen backgroundColor={colors.seniorBg}>
+            <Screen>
                 <View style={styles.header}>
                     <View style={styles.title}>
                         <AppText variant="small" color={colors.seniorOk}>VOS CONTACTS</AppText>

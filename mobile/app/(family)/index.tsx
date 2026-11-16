@@ -8,12 +8,14 @@ import { useAuth } from '../../src/context/AuthContext';
 import { useRealtime } from '../../src/hooks/useRealtime';
 import { RealtimeEvents } from '../../src/api/events';
 import { SeniorSummary } from '../../src/types';
-import { colors, spacing } from '../../src/theme';
+import { useAppearance } from '../../src/context/AppearanceContext';
+import { spacing } from '../../src/theme';
 import { getErrorMessage } from '../../src/utils/errorMessage';
 
 /** Tableau de bord FAMILLE : l'état de chaque proche, mis à jour en temps réel. */
 export default function FamilyHome() {
   const { signOut } = useAuth();
+  const { colors } = useAppearance();
   const { width } = useWindowDimensions();
   const [items, setItems] = useState<SeniorSummary[] | null>(null);
   const [error, setError] = useState<string | null>(null);

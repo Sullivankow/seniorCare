@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleProp, StyleSheet, Text, TextStyle } from 'react-native';
-import { colors, font } from '../../theme';
+import { useAppearance } from '../../context/AppearanceContext';
+import { font } from '../../theme';
 
 interface Props {
   readonly children: React.ReactNode;
@@ -12,6 +13,7 @@ interface Props {
 
 /** Texte avec tailles harmonisées (jamais de fontSize en dur dans les écrans). */
 export function AppText({ children, variant = 'body', color, style, center }: Props) {
+  const { colors } = useAppearance();
   return (
     <Text
       style={[

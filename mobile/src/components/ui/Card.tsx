@@ -1,21 +1,24 @@
 import React from 'react';
 import { StyleSheet, View, ViewStyle, StyleProp } from 'react-native';
-import { colors, radius, spacing } from '../../theme';
+import { useAppearance } from '../../context/AppearanceContext';
+import { radius, spacing } from '../../theme';
+
+interface Props {
+  readonly children: React.ReactNode;
+  readonly tone?: 'ok' | 'warn' | 'danger';
+  readonly style?: StyleProp<ViewStyle>;
+}
 
 /** Surface blanche arrondie. `tone` colore le fond pour signaler un état (ok / alerte). */
-export function Card({
-  children,
-  tone,
-  style,
-}: {
-  children: React.ReactNode;
-  tone?: 'ok' | 'warn' | 'danger';
-  style?: StyleProp<ViewStyle>;
-}) {
-  const bg = tone === 'ok' ? colors.okSoft : tone === 'warn' ? colors.warnSoft : tone === 'danger' ? colors.dangerSoft : colors.surface;
-  return <View style={[styles.card, { backgroundColor: bg }, style]}>{children}</View>;
+export function Card({ children, tone, style }: Readonly<Props>) {
+  const { colors } = useAppearance();
+  let backgroundColor = colors.surface;
+  if (tone === 'ok') backgroundColor = colors.okSoft;
+  else if (tone === 'warn') backgroundColor = colors.warnSoft;
+  else if (tone === 'danger') backgroundColor = colors.dangerSoft;
+  return <View style={[styles.card, { backgroundColor, borderColor: colors.line }, style]}>{children}</View>;
 }
 
 const styles = StyleSheet.create({
-  card: { borderRadius: radius.lg, padding: spacing.lg, gap: spacing.sm, borderWidth: 1, borderColor: colors.line },
+  card: { borderRadius: radius.lg, padding: spacing.lg, gap: spacing.sm, borderWidth: 1 },
 });

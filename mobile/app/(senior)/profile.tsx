@@ -3,7 +3,6 @@ import { Alert as NativeAlert } from 'react-native';
 import { AppText, Button, Card, Screen } from '../../src/components/ui';
 import { useAuth } from '../../src/context/AuthContext';
 import { InviteCodeCard } from '../../src/features/senior/InviteCodeCard';
-import { colors } from '../../src/theme';
 
 export default function SeniorProfile() {
   const { user, signOut } = useAuth();

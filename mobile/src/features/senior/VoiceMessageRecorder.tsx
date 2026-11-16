@@ -12,7 +12,8 @@ import {
 import { Mic } from 'lucide-react-native';
 import { AppText, Button, ErrorText, Screen } from '../../components/ui';
 import { voiceMessagesApi } from '../../api/endpoints';
-import { colors, spacing } from '../../theme';
+import { useAppearance } from '../../context/AppearanceContext';
+import { spacing } from '../../theme';
 import { getErrorMessage } from '../../utils/errorMessage';
 
 const MAX_RECORDING_SECONDS = 60;
@@ -30,6 +31,7 @@ function formatDuration(seconds: number) {
 }
 
 export function VoiceMessageRecorder({ visible, onClose, onMessageSent }: Props) {
+  const { colors } = useAppearance();
   const recorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
   const recorderState = useAudioRecorderState(recorder);
   const player = useAudioPlayer(null);
@@ -140,7 +142,7 @@ export function VoiceMessageRecorder({ visible, onClose, onMessageSent }: Props)
 
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={() => { void close(); }}>
-      <Screen fixed backgroundColor={colors.seniorBg}>
+      <Screen fixed>
         <View style={styles.header}>
           <View style={styles.heading}>
             <AppText variant="small" color={colors.seniorOk}>MESSAGE À VOTRE FAMILLE</AppText>
@@ -152,7 +154,7 @@ export function VoiceMessageRecorder({ visible, onClose, onMessageSent }: Props)
         <View style={styles.body}>
           {recorderState.isRecording && (
             <>
-              <View style={styles.micIcon}><Mic size={40} color={colors.white} /></View>
+              <View style={[styles.micIcon, { backgroundColor: colors.seniorPurple }]}><Mic size={40} color={colors.white} /></View>
               <AppText variant="huge" center>{formatDuration(durationSeconds)}</AppText>
               <AppText center>Enregistrement en cours</AppText>
               <Button label="Arrêter l’enregistrement" variant="danger" onPress={() => { void stopRecording(); }} />
@@ -173,7 +175,7 @@ export function VoiceMessageRecorder({ visible, onClose, onMessageSent }: Props)
           )}
           {!recorderState.isRecording && !recordingUri && (
             <>
-              <View style={styles.micIcon}><Mic size={40} color={colors.white} /></View>
+              <View style={[styles.micIcon, { backgroundColor: colors.seniorPurple }]}><Mic size={40} color={colors.white} /></View>
               <AppText center>Appuyez pour enregistrer un message de 60 secondes maximum.</AppText>
               <Button label="Commencer l’enregistrement" variant="success" onPress={() => { void startRecording(); }} />
             </>
@@ -199,6 +201,5 @@ const styles = StyleSheet.create({
     borderRadius: 44,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.seniorPurple,
   },
 });

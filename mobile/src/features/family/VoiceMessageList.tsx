@@ -8,7 +8,8 @@ import { voiceMessagesApi } from '../../api/endpoints';
 import { API_URL } from '../../config';
 import { useAuth } from '../../context/AuthContext';
 import { VoiceMessage } from '../../types';
-import { colors, spacing } from '../../theme';
+import { useAppearance } from '../../context/AppearanceContext';
+import { spacing } from '../../theme';
 import { getErrorMessage } from '../../utils/errorMessage';
 import { formatDateTime } from '../../utils/time';
 
@@ -55,6 +56,7 @@ async function prepareAudioSource(
 
 export function VoiceMessageList({ messages, onMessageDeleted }: Props) {
   const { token } = useAuth();
+  const { colors } = useAppearance();
   // Un seul lecteur natif sert toute la liste, même quand plusieurs messages sont présents.
   const player = useAudioPlayer(null, { updateInterval: 1000, downloadFirst: true });
   const playerState = useAudioPlayerStatus(player);

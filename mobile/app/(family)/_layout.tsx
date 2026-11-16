@@ -1,11 +1,12 @@
 import React from 'react';
 import { Redirect, Stack } from 'expo-router';
 import { useAuth } from '../../src/context/AuthContext';
-import { colors } from '../../src/theme';
+import { useAppearance } from '../../src/context/AppearanceContext';
 
 /** Garde : seuls les comptes FAMILLE accèdent à cette interface. */
 export default function FamilyLayout() {
   const { user, loading } = useAuth();
+  const { colors } = useAppearance();
   if (loading) return null;
   if (!user) return <Redirect href="/login" />;
   if (user.role !== 'FAMILY') return <Redirect href="/" />;
@@ -13,7 +14,8 @@ export default function FamilyLayout() {
     <Stack
       screenOptions={{
         headerStyle: { backgroundColor: colors.bg },
-        headerTitleStyle: { fontWeight: '700' },
+        headerTintColor: colors.ink,
+        headerTitleStyle: { fontWeight: '700', color: colors.ink },
         headerShadowVisible: false,
         headerBackTitle: 'Retour',
       }}

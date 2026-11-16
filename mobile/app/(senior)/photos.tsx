@@ -9,7 +9,8 @@ import { PhotoImage } from '../../src/features/photos/PhotoImage';
 import { useRealtime } from '../../src/hooks/useRealtime';
 import { RealtimeEvents } from '../../src/api/events';
 import { getErrorMessage } from '../../src/utils/errorMessage';
-import { colors, spacing } from '../../src/theme';
+import { useAppearance } from '../../src/context/AppearanceContext';
+import { spacing } from '../../src/theme';
 
 type AlbumView = 'today' | 'all' | 'memories';
 
@@ -114,13 +115,14 @@ export default function SeniorPhotosScreen() {
 }
 
 function AlbumTab({ label, selected, onPress }: { readonly label: string; readonly selected: boolean; readonly onPress: () => void }) {
+  const { colors } = useAppearance();
   return (
     <Pressable
       accessibilityRole="tab"
       accessibilityState={{ selected }}
       accessibilityLabel={label}
       onPress={onPress}
-      style={[styles.tab, selected && styles.selectedTab]}
+      style={[styles.tab, { borderColor: colors.line, backgroundColor: selected ? colors.primary : colors.surface }]}
     >
       <AppText color={selected ? colors.white : colors.inkSoft} style={styles.tabLabel}>{label}</AppText>
     </Pressable>
@@ -129,8 +131,7 @@ function AlbumTab({ label, selected, onPress }: { readonly label: string; readon
 
 const styles = StyleSheet.create({
   tabs: { flexDirection: 'row', gap: spacing.sm },
-  tab: { flex: 1, minHeight: 52, borderWidth: 1, borderColor: colors.line, borderRadius: 8, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center', paddingHorizontal: spacing.xs },
-  selectedTab: { backgroundColor: colors.primary, borderColor: colors.primary },
+  tab: { flex: 1, minHeight: 52, borderWidth: 1, borderRadius: 8, alignItems: 'center', justifyContent: 'center', paddingHorizontal: spacing.xs },
   tabLabel: { fontWeight: '700', textAlign: 'center' },
   details: { gap: spacing.md, paddingTop: spacing.md },
   navigation: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: spacing.sm },

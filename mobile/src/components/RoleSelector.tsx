@@ -1,7 +1,8 @@
 import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Role } from '../types';
-import { colors, radius } from '../theme';
+import { useAppearance } from '../context/AppearanceContext';
+import { radius } from '../theme';
 import { AppText } from './ui';
 
 const OPTIONS: { role: Role; title: string; hint: string }[] = [
@@ -11,6 +12,7 @@ const OPTIONS: { role: Role; title: string; hint: string }[] = [
 
 /** Choix du profil à l'inscription : détermine l'interface affichée ensuite. */
 export function RoleSelector({ value, onChange }: Readonly<{ value: Role; onChange: (r: Role) => void }>) {
+  const { colors } = useAppearance();
   return (
     <View style={{ gap: 12 }}>
       {OPTIONS.map((o) => {
@@ -21,7 +23,7 @@ export function RoleSelector({ value, onChange }: Readonly<{ value: Role; onChan
             accessibilityRole="radio"
             accessibilityState={{ selected }}
             onPress={() => onChange(o.role)}
-            style={[styles.option, selected && styles.selected]}
+            style={[styles.option, { borderColor: selected ? colors.primary : colors.line, backgroundColor: selected ? colors.primarySoft : colors.surface }]}
           >
             <AppText style={{ fontWeight: '700' }}>{o.title}</AppText>
             <AppText variant="small">{o.hint}</AppText>
@@ -33,6 +35,5 @@ export function RoleSelector({ value, onChange }: Readonly<{ value: Role; onChan
 }
 
 const styles = StyleSheet.create({
-  option: { borderWidth: 2, borderColor: colors.line, borderRadius: radius.md, padding: 16, backgroundColor: colors.surface },
-  selected: { borderColor: colors.primary, backgroundColor: colors.primarySoft },
+  option: { borderWidth: 2, borderRadius: radius.md, padding: 16 },
 });

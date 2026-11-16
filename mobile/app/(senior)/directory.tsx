@@ -5,10 +5,12 @@ import { ContactRound } from 'lucide-react-native';
 import { AppText, Button, Card, ErrorText, Input, Screen } from '../../src/components/ui';
 import { directoryApi } from '../../src/api/endpoints';
 import { DirectoryContact } from '../../src/types';
-import { colors, spacing } from '../../src/theme';
+import { useAppearance } from '../../src/context/AppearanceContext';
+import { spacing } from '../../src/theme';
 import { getErrorMessage } from '../../src/utils/errorMessage';
 
 export default function SeniorDirectory() {
+    const { colors } = useAppearance();
     const [contacts, setContacts] = useState<DirectoryContact[] | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [refreshing, setRefreshing] = useState(false);
@@ -98,7 +100,7 @@ export default function SeniorDirectory() {
             {contacts?.map((contact) => (
                 <Card key={contact.id}>
                     <View style={styles.contactHeader}>
-                        <View style={styles.iconBox}>
+                        <View style={[styles.iconBox, { backgroundColor: colors.okSoft }]}>
                             <ContactRound size={26} color={colors.seniorOk} />
                         </View>
                         <View style={styles.contactDetails}>
@@ -121,6 +123,6 @@ export default function SeniorDirectory() {
 
 const styles = StyleSheet.create({
     contactHeader: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
-    iconBox: { width: 52, height: 52, borderRadius: 16, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.okSoft },
+    iconBox: { width: 52, height: 52, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
     contactDetails: { flex: 1, gap: spacing.xs },
 });

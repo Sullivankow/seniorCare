@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { AppText } from '../../components/ui';
-import { colors, font, radius, spacing } from '../../theme';
+import { useAppearance } from '../../context/AppearanceContext';
+import { font, radius, spacing } from '../../theme';
 
 function formatDate(date: Date) {
     const value = date.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
@@ -9,6 +10,7 @@ function formatDate(date: Date) {
 }
 
 export function SeniorStatusPanel() {
+    const { colors } = useAppearance();
     const [now, setNow] = useState(() => new Date());
 
     useEffect(() => {
@@ -17,7 +19,7 @@ export function SeniorStatusPanel() {
     }, []);
 
     return (
-        <View style={styles.panel}>
+        <View style={[styles.panel, { backgroundColor: colors.seniorPanel, borderColor: colors.seniorLine }]}>
             <AppText color={colors.white} style={styles.date}>{formatDate(now)}</AppText>
             <AppText color={colors.white} style={styles.time}>
                 {now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
@@ -31,8 +33,6 @@ export function SeniorStatusPanel() {
 
 const styles = StyleSheet.create({
     panel: {
-        backgroundColor: colors.seniorPanel,
-        borderColor: colors.seniorLine,
         borderRadius: radius.lg,
         borderWidth: 1,
         padding: spacing.md,
