@@ -11,17 +11,20 @@ interface Props {
   /** Contenu non scrollable (écrans courts, centrés). */
   fixed?: boolean;
   backgroundColor?: string;
+  /** Réserve l'espace de la barre d'onglets flottante sur les écrans senior. */
+  reserveTabBarSpace?: boolean;
 }
 
 /** Conteneur d'écran standard : zone sûre, fond, marges, scroll. */
-export function Screen({ children, refreshControl, fixed, backgroundColor }: Readonly<Props>) {
+export function Screen({ children, refreshControl, fixed, backgroundColor, reserveTabBarSpace }: Readonly<Props>) {
   const { colors } = useAppearance();
+  const contentStyle = [styles.content, reserveTabBarSpace && styles.tabBarContent];
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: backgroundColor ?? colors.bg }]}>
       {fixed ? (
-        <View style={styles.content}>{children}</View>
+        <View style={contentStyle}>{children}</View>
       ) : (
-        <ScrollView contentContainerStyle={styles.content} refreshControl={refreshControl} keyboardShouldPersistTaps="handled">
+        <ScrollView contentContainerStyle={contentStyle} refreshControl={refreshControl} keyboardShouldPersistTaps="handled">
           {children}
         </ScrollView>
       )}
@@ -32,4 +35,5 @@ export function Screen({ children, refreshControl, fixed, backgroundColor }: Rea
 const styles = StyleSheet.create({
   safe: { flex: 1 },
   content: { padding: spacing.lg, gap: spacing.md, flexGrow: 1 },
+  tabBarContent: { paddingBottom: 104 },
 });

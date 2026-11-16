@@ -13,5 +13,5 @@ const sections = [
 ];
 
 export default function PrivacySettingsScreen() {
-    return <SettingsInfoPage title="Confidentialité" sections={sections} />;
+    return <SettingsInfoPage title="Confidentialité" sections={sections} reserveTabBarSpace />;
 }

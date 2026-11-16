@@ -70,7 +70,7 @@ export default function SeniorPhotosScreen() {
   };
 
   return (
-    <Screen>
+    <Screen reserveTabBarSpace>
       <AppText variant="title">Ma famille en photos</AppText>
       <View style={styles.tabs}>
         <AlbumTab label="Photo du jour" selected={view === 'today'} onPress={() => selectView('today')} />

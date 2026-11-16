@@ -116,6 +116,7 @@ export default function SeniorHome() {
   return (
     <>
       <Screen
+        reserveTabBarSpace
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={async () => { setRefreshing(true); await load(); setRefreshing(false); }} />
         }

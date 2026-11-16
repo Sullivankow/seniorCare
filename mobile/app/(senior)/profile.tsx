@@ -14,7 +14,7 @@ export default function SeniorProfile() {
     ]);
 
   return (
-    <Screen>
+    <Screen reserveTabBarSpace>
       <AppText variant="title">Mon profil</AppText>
       <Card>
         <AppText variant="title">{user?.fullName}</AppText>

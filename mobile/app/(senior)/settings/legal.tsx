@@ -10,5 +10,5 @@ const sections = [
 ];
 
 export default function LegalSettingsScreen() {
-    return <SettingsInfoPage title="Mentions légales" sections={sections} />;
+    return <SettingsInfoPage title="Mentions légales" sections={sections} reserveTabBarSpace />;
 }

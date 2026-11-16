@@ -15,7 +15,7 @@ export default function SettingsScreen() {
     const { mode, setMode, colors } = useAppearance();
 
     return (
-        <Screen>
+        <Screen reserveTabBarSpace>
             <AppText variant="title">Paramètres</AppText>
 
             <View style={styles.section}>

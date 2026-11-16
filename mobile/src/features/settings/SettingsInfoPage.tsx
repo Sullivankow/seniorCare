@@ -7,9 +7,9 @@ export interface SettingsInfoSection {
     readonly body: string;
 }
 
-export function SettingsInfoPage({ title, sections }: { readonly title: string; readonly sections: readonly SettingsInfoSection[] }) {
+export function SettingsInfoPage({ title, sections, reserveTabBarSpace = false }: { readonly title: string; readonly sections: readonly SettingsInfoSection[]; readonly reserveTabBarSpace?: boolean }) {
     return (
-        <Screen>
+        <Screen reserveTabBarSpace={reserveTabBarSpace}>
             <Button label="Retour aux paramètres" variant="ghost" onPress={() => router.back()} />
             <AppText variant="title">{title}</AppText>
             {sections.map((section) => (
