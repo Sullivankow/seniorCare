@@ -77,7 +77,7 @@ export default function SeniorHome() {
       subtitle: last?.status === 'OK' ? 'Confirmer à nouveau' : 'Rassurer ma famille',
       icon: <CircleCheck size={28} color={colors.white} strokeWidth={2.4} />,
       trailing: <Check size={22} color={colors.white} strokeWidth={2.8} />,
-      color: colors.seniorOk,
+      color: last?.status === 'OK' ? colors.seniorOk : colors.danger,
       onPress: () => sendCheckIn.run(),
       loading: sendCheckIn.loading,
     },
