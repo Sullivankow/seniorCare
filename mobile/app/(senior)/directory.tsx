@@ -1,12 +1,12 @@
 import React, { useCallback, useState } from 'react';
-import { ActivityIndicator, Alert as NativeAlert, Linking, Pressable, RefreshControl, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Alert as NativeAlert, Linking, Pressable, RefreshControl, StyleSheet, TextInput, View } from 'react-native';
 import { useFocusEffect } from 'expo-router';
-import { ContactRound, Mail, Pencil, Phone, Trash2 } from 'lucide-react-native';
+import { ContactRound, Mail, Pencil, Phone, Plus, Search, Trash2, X } from 'lucide-react-native';
 import { AppText, Button, Card, ErrorText, Input, Screen } from '../../src/components/ui';
 import { directoryApi } from '../../src/api/endpoints';
 import { DirectoryContact } from '../../src/types';
 import { useAppearance } from '../../src/context/AppearanceContext';
-import { spacing } from '../../src/theme';
+import { font, spacing } from '../../src/theme';
 import { getErrorMessage } from '../../src/utils/errorMessage';
 
 export default function SeniorDirectory() {
@@ -15,6 +15,7 @@ export default function SeniorDirectory() {
     const [error, setError] = useState<string | null>(null);
     const [refreshing, setRefreshing] = useState(false);
     const [showForm, setShowForm] = useState(false);
+    const [search, setSearch] = useState('');
     const [editingContactId, setEditingContactId] = useState<string | null>(null);
     const [fullName, setFullName] = useState('');
     const [phone, setPhone] = useState('');
@@ -22,6 +23,16 @@ export default function SeniorDirectory() {
     const [formError, setFormError] = useState<string | null>(null);
     const [saving, setSaving] = useState(false);
     const [deletingContactId, setDeletingContactId] = useState<string | null>(null);
+
+    // Filtre le carnet déjà chargé localement, sans requête réseau à chaque caractère saisi.
+    const normalizedSearch = search.trim().toLocaleLowerCase('fr-FR');
+    const filteredContacts = (contacts ?? []).filter((contact) =>
+        [contact.fullName, contact.phone, contact.email]
+            .filter(Boolean)
+            .join(' ')
+            .toLocaleLowerCase('fr-FR')
+            .includes(normalizedSearch),
+    );
 
     const load = useCallback(async () => {
         try {
@@ -111,11 +122,35 @@ export default function SeniorDirectory() {
             <AppText>Vos proches et les personnes que vous souhaitez joindre.</AppText>
             <ErrorText message={error} />
 
-            <Button
-                label={showForm ? 'Fermer le formulaire' : 'Ajouter une personne'}
-                variant={showForm ? 'ghost' : 'success'}
-                onPress={() => { if (showForm) resetForm(); else { setEditingContactId(null); setFormError(null); setShowForm(true); } }}
-            />
+            <View style={styles.searchRow}>
+                <View style={[styles.searchField, { borderColor: colors.line, backgroundColor: colors.surface }]}>
+                    <Search size={22} color={colors.inkSoft} />
+                    <TextInput
+                        accessibilityLabel="Rechercher un contact"
+                        placeholder="Nom, téléphone ou e-mail"
+                        placeholderTextColor={colors.inkSoft}
+                        value={search}
+                        onChangeText={setSearch}
+                        returnKeyType="search"
+                        style={[styles.searchInput, { color: colors.ink }]}
+                    />
+                </View>
+                <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={showForm ? 'Fermer le formulaire' : 'Ajouter une personne'}
+                    onPress={() => { if (showForm) resetForm(); else { setEditingContactId(null); setFormError(null); setShowForm(true); } }}
+                    style={({ pressed }) => [styles.addButton, { backgroundColor: showForm ? colors.surface : colors.primary, borderColor: showForm ? colors.line : colors.primary }, pressed && styles.pressed]}
+                >
+                    {showForm ? <X size={24} color={colors.ink} /> : <Plus size={26} color={colors.white} />}
+                </Pressable>
+            </View>
+            <AppText variant="small" color={colors.inkSoft}>
+                {contacts === null
+                    ? 'Chargement des contacts…'
+                    : normalizedSearch
+                        ? `${filteredContacts.length} résultat${filteredContacts.length === 1 ? '' : 's'} sur ${contacts.length} contact${contacts.length === 1 ? '' : 's'}`
+                        : `${contacts.length} contact${contacts.length === 1 ? '' : 's'}`}
+            </AppText>
 
             {showForm && (
                 <Card>
@@ -136,7 +171,14 @@ export default function SeniorDirectory() {
                 </Card>
             )}
 
-            {contacts?.map((contact) => {
+            {contacts && contacts.length > 0 && filteredContacts.length === 0 && (
+                <Card>
+                    <AppText variant="title">Aucun contact trouvé</AppText>
+                    <AppText>Essayez avec un autre nom, numéro ou e-mail.</AppText>
+                </Card>
+            )}
+
+            {filteredContacts.map((contact) => {
                 const canManage = contact.source === 'personal';
                 const isDeleting = deletingContactId === contact.id;
                 return (
@@ -231,6 +273,10 @@ function IconAction({ icon, label, onPress, destructive, disabled }: { readonly 
 }
 
 const styles = StyleSheet.create({
+    searchRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+    searchField: { flex: 1, minHeight: 56, flexDirection: 'row', alignItems: 'center', gap: spacing.sm, borderWidth: 2, borderRadius: 8, paddingHorizontal: spacing.md },
+    searchInput: { flex: 1, minWidth: 0, minHeight: 52, fontSize: font.body },
+    addButton: { width: 56, height: 56, borderWidth: 2, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
     contactTitleRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
     contactName: { flex: 1 },
     contactHeader: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
