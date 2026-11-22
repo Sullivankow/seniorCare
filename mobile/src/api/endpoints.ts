@@ -42,6 +42,12 @@ export const directoryApi = {
   listContacts: () => request<DirectoryContact[]>("GET", "/links/me/contacts"),
   createContact: (data: { fullName: string; phone: string; email?: string }) =>
     request<DirectoryContact>("POST", "/links/me/contacts", data),
+  updateContact: (
+    id: string,
+    data: { fullName: string; phone: string; email: string | null },
+  ) => request<DirectoryContact>("PATCH", `/links/me/contacts/${id}`, data),
+  deleteContact: (id: string) =>
+    request<{ deleted: boolean }>("DELETE", `/links/me/contacts/${id}`),
 };
 
 export const voiceMessagesApi = {

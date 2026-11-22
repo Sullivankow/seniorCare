@@ -44,7 +44,7 @@ async function parseResponse<T>(response: Response): Promise<T> {
  * Tous les appels de l'app passent par ici (un seul endroit à modifier pour gérer les erreurs/refresh).
  */
 export async function request<T>(
-  method: "GET" | "POST" | "PUT" | "DELETE",
+  method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE",
   path: string,
   body?: unknown,
 ): Promise<T> {

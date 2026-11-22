@@ -17,6 +17,7 @@ export interface DirectoryContact {
   fullName: string;
   email: string | null;
   phone: string | null;
+  source: "family" | "personal";
 }
 
 export interface VoiceMessage {

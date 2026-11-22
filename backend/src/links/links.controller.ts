@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Post, UseGuards } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  UseGuards,
+} from "@nestjs/common";
 import { ApiBearerAuth, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { AuthUser, CurrentUser } from "../common/current-user.decorator";
 import { JwtAuthGuard } from "../common/jwt-auth.guard";
@@ -7,6 +16,7 @@ import { Roles } from "../common/roles.decorator";
 import { RolesGuard } from "../common/roles.guard";
 import { LinksService } from "./links.service";
 import { CreateContactDto } from "./dto/create-contact.dto";
+import { UpdateContactDto } from "./dto/update-contact.dto";
 
 @ApiTags("Répertoire")
 @ApiBearerAuth()
@@ -30,5 +40,25 @@ export class LinksController {
   })
   createContact(@CurrentUser() user: AuthUser, @Body() dto: CreateContactDto) {
     return this.links.createContact(user.id, dto);
+  }
+
+  @Patch("me/contacts/:id")
+  @ApiOperation({
+    summary: "Modifie un contact du répertoire du senior connecté",
+  })
+  updateContact(
+    @CurrentUser() user: AuthUser,
+    @Param("id") id: string,
+    @Body() dto: UpdateContactDto,
+  ) {
+    return this.links.updateContact(user.id, id, dto);
+  }
+
+  @Delete("me/contacts/:id")
+  @ApiOperation({
+    summary: "Supprime un contact du répertoire du senior connecté",
+  })
+  deleteContact(@CurrentUser() user: AuthUser, @Param("id") id: string) {
+    return this.links.deleteContact(user.id, id);
   }
 }

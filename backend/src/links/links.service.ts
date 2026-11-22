@@ -7,6 +7,7 @@ import {
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { CreateContactDto } from "./dto/create-contact.dto";
+import { UpdateContactDto } from "./dto/update-contact.dto";
 import { SeniorContact } from "./senior-contact.entity";
 import { SeniorLink } from "./senior-link.entity";
 import { UsersService } from "../users/users.service";
@@ -56,16 +57,14 @@ export class LinksService {
               fullName: user.fullName,
               email: user.email,
               phone: null,
+              source: "family" as const,
             },
           ]
         : [],
     );
-    const personalContacts = savedContacts.map((contact) => ({
-      id: contact.id,
-      fullName: contact.fullName,
-      email: contact.email,
-      phone: contact.phone,
-    }));
+    const personalContacts = savedContacts.map((contact) =>
+      this.toPersonalContact(contact),
+    );
     return [...familyContacts, ...personalContacts].sort((left, right) =>
       left.fullName.localeCompare(right.fullName),
     );
@@ -78,7 +77,38 @@ export class LinksService {
       phone: dto.phone.trim(),
       email: dto.email?.trim() || null,
     });
-    return this.contacts.save(contact);
+    return this.toPersonalContact(await this.contacts.save(contact));
+  }
+
+  async updateContact(
+    seniorId: string,
+    contactId: string,
+    dto: UpdateContactDto,
+  ) {
+    const contact = await this.contacts.findOneBy({ id: contactId, seniorId });
+    if (!contact) throw new NotFoundException("Contact introuvable.");
+
+    if (dto.fullName != null) contact.fullName = dto.fullName.trim();
+    if (dto.phone != null) contact.phone = dto.phone.trim();
+    if (dto.email !== undefined) contact.email = dto.email?.trim() || null;
+
+    return this.toPersonalContact(await this.contacts.save(contact));
+  }
+
+  async deleteContact(seniorId: string, contactId: string) {
+    const result = await this.contacts.delete({ id: contactId, seniorId });
+    if (!result.affected) throw new NotFoundException("Contact introuvable.");
+    return { deleted: true };
+  }
+
+  private toPersonalContact(contact: SeniorContact) {
+    return {
+      id: contact.id,
+      fullName: contact.fullName,
+      email: contact.email,
+      phone: contact.phone,
+      source: "personal" as const,
+    };
   }
 
   isLinked(familyId: string, seniorId: string) {

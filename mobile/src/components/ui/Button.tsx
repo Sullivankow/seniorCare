@@ -42,7 +42,7 @@ export function Button({ label, onPress, variant = 'primary', loading, disabled 
       {loading ? (
         <ActivityIndicator color={p.fg} />
       ) : (
-        <AppText color={p.fg} style={{ fontWeight: '700', fontSize: font.body }}>
+        <AppText color={p.fg} style={{ fontWeight: '700', fontSize: font.body, textAlign: 'center' }}>
           {label}
         </AppText>
       )}
