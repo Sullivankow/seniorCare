@@ -9,7 +9,7 @@ import { useAppearance } from '../../src/context/AppearanceContext';
 import { font, spacing } from '../../src/theme';
 import { getErrorMessage } from '../../src/utils/errorMessage';
 
-export default function SeniorDirectory() {
+export default function SeniorDirectory(): React.JSX.Element {
     const { colors } = useAppearance();
     const [contacts, setContacts] = useState<DirectoryContact[] | null>(null);
     const [error, setError] = useState<string | null>(null);
@@ -24,15 +24,8 @@ export default function SeniorDirectory() {
     const [saving, setSaving] = useState(false);
     const [deletingContactId, setDeletingContactId] = useState<string | null>(null);
 
-    // Filtre le carnet déjà chargé localement, sans requête réseau à chaque caractère saisi.
-    const normalizedSearch = search.trim().toLocaleLowerCase('fr-FR');
-    const filteredContacts = (contacts ?? []).filter((contact) =>
-        [contact.fullName, contact.phone, contact.email]
-            .filter(Boolean)
-            .join(' ')
-            .toLocaleLowerCase('fr-FR')
-            .includes(normalizedSearch),
-    );
+    const filteredContacts = filterContacts(contacts ?? [], search);
+    const countLabel = getContactCountLabel(contacts, filteredContacts.length, search);
 
     const load = useCallback(async () => {
         try {
@@ -60,6 +53,16 @@ export default function SeniorDirectory() {
         setEmail('');
         setFormError(null);
         setShowForm(false);
+    };
+
+    const toggleForm = () => {
+        if (showForm) {
+            resetForm();
+            return;
+        }
+        setEditingContactId(null);
+        setFormError(null);
+        setShowForm(true);
     };
 
     const startEditing = (contact: DirectoryContact) => {
@@ -122,6 +125,88 @@ export default function SeniorDirectory() {
             <AppText>Vos proches et les personnes que vous souhaitez joindre.</AppText>
             <ErrorText message={error} />
 
+            <DirectoryToolbar
+                search={search}
+                onSearchChange={setSearch}
+                countLabel={countLabel}
+                formOpen={showForm}
+                onToggleForm={toggleForm}
+            />
+
+            {showForm && <ContactFormCard
+                editing={editingContactId !== null}
+                fullName={fullName}
+                phone={phone}
+                email={email}
+                error={formError}
+                saving={saving}
+                onFullNameChange={setFullName}
+                onPhoneChange={setPhone}
+                onEmailChange={setEmail}
+                onSave={() => { void saveContact(); }}
+            />}
+
+            {contacts === null && !error && <ActivityIndicator color={colors.primary} />}
+            {contacts?.length === 0 && <DirectoryEmptyState />}
+            {contacts && contacts.length > 0 && filteredContacts.length === 0 && <SearchEmptyState />}
+
+            {filteredContacts.map((contact) => (
+                <DirectoryContactCard
+                    key={contact.id}
+                    contact={contact}
+                    deleting={deletingContactId === contact.id}
+                    onEdit={() => startEditing(contact)}
+                    onDelete={() => confirmDelete(contact)}
+                    onCall={(contactPhone) => { void openContact(`tel:${contactPhone}`); }}
+                    onEmail={(contactEmail) => { void openContact(`mailto:${contactEmail}`); }}
+                />
+            ))}
+        </Screen>
+    );
+}
+
+function filterContacts(contacts: DirectoryContact[], query: string): DirectoryContact[] {
+    const normalizedQuery = query.trim().toLocaleLowerCase('fr-FR');
+    if (!normalizedQuery) return contacts;
+
+    return contacts.filter((contact) =>
+        [contact.fullName, contact.phone, contact.email]
+            .filter(Boolean)
+            .join(' ')
+            .toLocaleLowerCase('fr-FR')
+            .includes(normalizedQuery),
+    );
+}
+
+function getContactCountLabel(contacts: DirectoryContact[] | null, resultCount: number, query: string): string {
+    if (!contacts) return 'Chargement des contacts…';
+    if (!query.trim()) return formatContactCount(contacts.length);
+    return `${formatResultCount(resultCount)} sur ${formatContactCount(contacts.length)}`;
+}
+
+function formatContactCount(count: number): string {
+    return `${count} contact${count === 1 ? '' : 's'}`;
+}
+
+function formatResultCount(count: number): string {
+    return `${count} résultat${count === 1 ? '' : 's'}`;
+}
+
+interface DirectoryToolbarProps {
+    readonly search: string;
+    readonly onSearchChange: (value: string) => void;
+    readonly countLabel: string;
+    readonly formOpen: boolean;
+    readonly onToggleForm: () => void;
+}
+
+function DirectoryToolbar({ search, onSearchChange, countLabel, formOpen, onToggleForm }: DirectoryToolbarProps): React.JSX.Element {
+    const { colors } = useAppearance();
+    const addButtonBackground = formOpen ? colors.surface : colors.primary;
+    const addButtonBorder = formOpen ? colors.line : colors.primary;
+
+    return (
+        <>
             <View style={styles.searchRow}>
                 <View style={[styles.searchField, { borderColor: colors.line, backgroundColor: colors.surface }]}>
                     <Search size={22} color={colors.inkSoft} />
@@ -130,110 +215,138 @@ export default function SeniorDirectory() {
                         placeholder="Nom, téléphone ou e-mail"
                         placeholderTextColor={colors.inkSoft}
                         value={search}
-                        onChangeText={setSearch}
+                        onChangeText={onSearchChange}
                         returnKeyType="search"
                         style={[styles.searchInput, { color: colors.ink }]}
                     />
                 </View>
                 <Pressable
                     accessibilityRole="button"
-                    accessibilityLabel={showForm ? 'Fermer le formulaire' : 'Ajouter une personne'}
-                    onPress={() => { if (showForm) resetForm(); else { setEditingContactId(null); setFormError(null); setShowForm(true); } }}
-                    style={({ pressed }) => [styles.addButton, { backgroundColor: showForm ? colors.surface : colors.primary, borderColor: showForm ? colors.line : colors.primary }, pressed && styles.pressed]}
+                    accessibilityLabel={formOpen ? 'Fermer le formulaire' : 'Ajouter une personne'}
+                    onPress={onToggleForm}
+                    style={({ pressed }) => [styles.addButton, { backgroundColor: addButtonBackground, borderColor: addButtonBorder }, pressed && styles.pressed]}
                 >
-                    {showForm ? <X size={24} color={colors.ink} /> : <Plus size={26} color={colors.white} />}
+                    {formOpen ? <X size={24} color={colors.ink} /> : <Plus size={26} color={colors.white} />}
                 </Pressable>
             </View>
-            <AppText variant="small" color={colors.inkSoft}>
-                {contacts === null
-                    ? 'Chargement des contacts…'
-                    : normalizedSearch
-                        ? `${filteredContacts.length} résultat${filteredContacts.length === 1 ? '' : 's'} sur ${contacts.length} contact${contacts.length === 1 ? '' : 's'}`
-                        : `${contacts.length} contact${contacts.length === 1 ? '' : 's'}`}
-            </AppText>
+            <AppText variant="small" color={colors.inkSoft}>{countLabel}</AppText>
+        </>
+    );
+}
 
-            {showForm && (
-                <Card>
-                    <AppText variant="title">{editingContactId ? 'Modifier le contact' : 'Nouveau contact'}</AppText>
-                    <Input label="Nom" value={fullName} onChangeText={setFullName} autoCapitalize="words" maxLength={100} />
-                    <Input label="Téléphone" value={phone} onChangeText={setPhone} keyboardType="phone-pad" maxLength={30} />
-                    <Input label="E-mail (facultatif)" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" maxLength={255} />
-                    <ErrorText message={formError} />
-                    <Button label={editingContactId ? 'Enregistrer les modifications' : 'Enregistrer le contact'} onPress={() => { void saveContact(); }} loading={saving} disabled={!fullName.trim() || !phone.trim()} />
-                </Card>
+interface ContactFormCardProps {
+    readonly editing: boolean;
+    readonly fullName: string;
+    readonly phone: string;
+    readonly email: string;
+    readonly error: string | null;
+    readonly saving: boolean;
+    readonly onFullNameChange: (value: string) => void;
+    readonly onPhoneChange: (value: string) => void;
+    readonly onEmailChange: (value: string) => void;
+    readonly onSave: () => void;
+}
+
+function ContactFormCard({
+    editing,
+    fullName,
+    phone,
+    email,
+    error,
+    saving,
+    onFullNameChange,
+    onPhoneChange,
+    onEmailChange,
+    onSave,
+}: ContactFormCardProps): React.JSX.Element {
+    return (
+        <Card>
+            <AppText variant="title">{editing ? 'Modifier le contact' : 'Nouveau contact'}</AppText>
+            <Input label="Nom" value={fullName} onChangeText={onFullNameChange} autoCapitalize="words" maxLength={100} />
+            <Input label="Téléphone" value={phone} onChangeText={onPhoneChange} keyboardType="phone-pad" maxLength={30} />
+            <Input label="E-mail (facultatif)" value={email} onChangeText={onEmailChange} keyboardType="email-address" autoCapitalize="none" maxLength={255} />
+            <ErrorText message={error} />
+            <Button
+                label={editing ? 'Enregistrer les modifications' : 'Enregistrer le contact'}
+                onPress={onSave}
+                loading={saving}
+                disabled={!fullName.trim() || !phone.trim()}
+            />
+        </Card>
+    );
+}
+
+function DirectoryEmptyState(): React.JSX.Element {
+    return (
+        <Card>
+            <AppText variant="title">Votre répertoire est vide</AppText>
+            <AppText>Ajoutez une personne ou partagez votre code depuis Profil pour retrouver votre famille ici.</AppText>
+        </Card>
+    );
+}
+
+function SearchEmptyState(): React.JSX.Element {
+    return (
+        <Card>
+            <AppText variant="title">Aucun contact trouvé</AppText>
+            <AppText>Essayez avec un autre nom, numéro ou e-mail.</AppText>
+        </Card>
+    );
+}
+
+interface DirectoryContactCardProps {
+    readonly contact: DirectoryContact;
+    readonly deleting: boolean;
+    readonly onEdit: () => void;
+    readonly onDelete: () => void;
+    readonly onCall: (phone: string) => void;
+    readonly onEmail: (email: string) => void;
+}
+
+function DirectoryContactCard({ contact, deleting, onEdit, onDelete, onCall, onEmail }: DirectoryContactCardProps): React.JSX.Element {
+    const { colors } = useAppearance();
+    const phone = contact.phone;
+    const email = contact.email;
+    const canManage = contact.source === 'personal';
+
+    return (
+        <Card>
+            <View style={styles.contactTitleRow}>
+                <AppText variant="title" style={styles.contactName}>{contact.fullName}</AppText>
+                {canManage && (
+                    <View style={styles.manageActions}>
+                        <IconAction
+                            label={`Modifier ${contact.fullName}`}
+                            disabled={deleting}
+                            onPress={onEdit}
+                            icon={<Pencil size={20} color={colors.primary} />}
+                        />
+                        <IconAction
+                            label={`Supprimer ${contact.fullName}`}
+                            destructive
+                            disabled={deleting}
+                            onPress={onDelete}
+                            icon={<Trash2 size={20} color={colors.danger} />}
+                        />
+                    </View>
+                )}
+            </View>
+            <View style={styles.contactHeader}>
+                <View style={[styles.iconBox, { backgroundColor: colors.okSoft }]}>
+                    <ContactRound size={26} color={colors.seniorOk} />
+                </View>
+                <View style={styles.contactDetails}>
+                    {!!phone && <AppText variant="small">{phone}</AppText>}
+                    {!!email && <AppText variant="small">{email}</AppText>}
+                </View>
+            </View>
+            {(phone || email) && (
+                <View style={styles.contactActions}>
+                    {!!phone && <ContactAction icon={<Phone size={20} color={colors.primary} />} label="Appeler" onPress={() => onCall(phone)} />}
+                    {!!email && <ContactAction icon={<Mail size={20} color={colors.primary} />} label="E-mail" onPress={() => onEmail(email)} />}
+                </View>
             )}
-
-            {contacts === null && !error && <ActivityIndicator color={colors.primary} />}
-            {contacts?.length === 0 && (
-                <Card>
-                    <AppText variant="title">Votre répertoire est vide</AppText>
-                    <AppText>Ajoutez une personne ou partagez votre code depuis Profil pour retrouver votre famille ici.</AppText>
-                </Card>
-            )}
-
-            {contacts && contacts.length > 0 && filteredContacts.length === 0 && (
-                <Card>
-                    <AppText variant="title">Aucun contact trouvé</AppText>
-                    <AppText>Essayez avec un autre nom, numéro ou e-mail.</AppText>
-                </Card>
-            )}
-
-            {filteredContacts.map((contact) => {
-                const canManage = contact.source === 'personal';
-                const isDeleting = deletingContactId === contact.id;
-                return (
-                    <Card key={contact.id}>
-                        <View style={styles.contactTitleRow}>
-                            <AppText variant="title" style={styles.contactName}>{contact.fullName}</AppText>
-                            {canManage && (
-                                <View style={styles.manageActions}>
-                                    <IconAction
-                                        label={`Modifier ${contact.fullName}`}
-                                        disabled={isDeleting}
-                                        onPress={() => startEditing(contact)}
-                                        icon={<Pencil size={20} color={colors.primary} />}
-                                    />
-                                    <IconAction
-                                        label={`Supprimer ${contact.fullName}`}
-                                        destructive
-                                        disabled={isDeleting}
-                                        onPress={() => confirmDelete(contact)}
-                                        icon={<Trash2 size={20} color={colors.danger} />}
-                                    />
-                                </View>
-                            )}
-                        </View>
-                        <View style={styles.contactHeader}>
-                            <View style={[styles.iconBox, { backgroundColor: colors.okSoft }]}>
-                                <ContactRound size={26} color={colors.seniorOk} />
-                            </View>
-                            <View style={styles.contactDetails}>
-                                {Boolean(contact.phone) && <AppText variant="small">{contact.phone}</AppText>}
-                                {Boolean(contact.email) && <AppText variant="small">{contact.email}</AppText>}
-                            </View>
-                        </View>
-                        {(contact.phone || contact.email) && (
-                            <View style={styles.contactActions}>
-                                {Boolean(contact.phone) && (
-                                    <ContactAction
-                                        icon={<Phone size={20} color={colors.primary} />}
-                                        label="Appeler"
-                                        onPress={() => { void openContact(`tel:${contact.phone}`); }}
-                                    />
-                                )}
-                                {Boolean(contact.email) && (
-                                    <ContactAction
-                                        icon={<Mail size={20} color={colors.primary} />}
-                                        label="E-mail"
-                                        onPress={() => { void openContact(`mailto:${contact.email}`); }}
-                                    />
-                                )}
-                            </View>
-                        )}
-                    </Card>
-                );
-            })}
-        </Screen>
+        </Card>
     );
 }
 

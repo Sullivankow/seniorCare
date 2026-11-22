@@ -19,6 +19,12 @@ type AlbumView = 'today' | 'all' | 'memories';
 
 const today = () => new Date().toISOString().slice(0, 10);
 
+function getGridColumns(width: number): number {
+  if (width >= 900) return 5;
+  if (width >= 600) return 4;
+  return 3;
+}
+
 export default function SeniorPhotosScreen() {
   const { colors } = useAppearance();
   const { width } = useWindowDimensions();
@@ -42,7 +48,7 @@ export default function SeniorPhotosScreen() {
   useRealtime({ [RealtimeEvents.PHOTO_CREATED]: () => { void load(); } });
   useEffect(() => () => { void Speech.stop(); }, []);
 
-  const columns = width >= 900 ? 5 : width >= 600 ? 4 : 3;
+  const columns = getGridColumns(width);
   const tileSize = Math.floor((width - spacing.lg * 2 - spacing.xs * (columns - 1)) / columns);
   const visiblePhotos = photos.filter((photo) => {
     if (view === 'today') return photo.surpriseDate === today();
