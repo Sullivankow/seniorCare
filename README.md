@@ -18,9 +18,9 @@ Application de veille bienveillante entre des seniors et leur famille.
 - **Rôle senior** : code d'invitation unique à 6 caractères, pointage « Je vais bien » ou « Pas très en forme », affichage du dernier pointage et bouton SOS déclenché par un appui long de 1,5 seconde. Le senior peut annuler une alerte active.
 - **Navigation et apparence** : barre d'onglets flottante avec fond flouté, accès à l'accueil, aux photos, aux contacts, aux réglages et au profil. Le mode clair/sombre est mémorisé sur l'appareil.
 - **Réglages** : activation du mode sombre, rubrique confidentialité et mentions légales. Les coordonnées de l'éditeur, l'hébergement, les durées de conservation et les modalités d'exercice des droits restent à renseigner avant publication.
-- **Profil et répertoire du senior** : consultation de son nom, de son e-mail et de son code d'invitation; liste des proches liés et ajout de contacts personnels avec téléphone et e-mail. Les actions « Appeler » et « Envoyer un e-mail » ouvrent l'application correspondante du téléphone.
+- **Profil et répertoire du senior** : consultation de son nom, de son e-mail et de son code d'invitation; liste des proches liés, recherche par nom/téléphone/e-mail, ajout, modification et suppression de contacts personnels avec téléphone et e-mail. Les actions « Appeler » et « Envoyer un e-mail » ouvrent l'application correspondante du téléphone.
 - **Rôle famille** : rattachement à un senior avec son code, tableau de bord des seniors suivis, état du jour et dernière nouvelle, historique chronologique des pointages et alertes, messages vocaux reçus et clôture d'une urgence.
-- **Album photo familial** : envoi de photos et de petits mots par les proches, photo surprise du jour, souvenirs datés, cœur du senior et lecture vocale des messages. La liste famille est virtualisée côté mobile; l'API renvoie au plus les 100 photos les plus récentes.
+- **Album photo familial** : envoi de photos et de petits mots par les proches, onglets « Photo du jour », « Toutes » et « Souvenirs », grille responsive virtualisée sur la vue du senior, photo surprise du jour, cœur du senior et lecture vocale des messages. L'API renvoie au plus les 100 photos les plus récentes.
 - **Alertes et temps réel** : une alerte active à la fois par senior; les pointages, nouvelles alertes et clôtures sont transmis aux appareils connectés concernés via Socket.IO. Le tableau de bord affiche une alerte urgente immédiatement.
 - **Protection des données** : mots de passe hachés, accès API par jeton JWT, contrôle des rôles et vérification du rattachement famille-senior avant l'accès à ses données.
 
@@ -94,13 +94,13 @@ En développement, `VOICE_STORAGE_DRIVER=local` stocke les fichiers dans `backen
 
 ### Album photo familial
 
-Un proche lié peut ajouter une photo, un petit mot, une date de souvenir et la marquer comme photo surprise du jour. Le senior consulte son album, aime les photos et peut écouter les petits mots. Les photos sont privées et ne sont délivrées qu'après vérification du JWT et du lien famille-senior ; l'évènement temps réel fonctionne lorsque l'application est ouverte. Les notifications push quand elle est fermée ne sont pas incluses.
+Un proche lié peut ajouter une photo, un petit mot, une date de souvenir et la marquer comme photo surprise du jour. Le senior consulte son album dans une grille responsive virtualisée, avec les onglets « Photo du jour », « Toutes » et « Souvenirs »; il peut ouvrir une photo en grand, aimer ou retirer son cœur et écouter les petits mots. Les photos sont privées et ne sont délivrées qu'après vérification du JWT et du lien famille-senior ; l'évènement temps réel fonctionne lorsque l'application est ouverte. Les notifications push quand elle est fermée ne sont pas incluses.
 
 Les fichiers sont stockés localement dans `backend/uploads/family-photos/` par défaut. En production, configurez le stockage S3 partagé avec `MEDIA_STORAGE_DRIVER=s3` et les variables `MEDIA_S3_*` ; les anciennes variables `VOICE_S3_*` restent acceptées pour compatibilité. Si `DB_SYNCHRONIZE=false`, exécutez `backend/sql/create-family-photos.sql` une fois.
 
 ### Répertoire du senior
 
-Les proches liés apparaissent automatiquement dans le répertoire du senior; celui-ci peut aussi ajouter des contacts personnels et lancer un appel ou un e-mail depuis son téléphone. Si `DB_SYNCHRONIZE=false`, exécutez `backend/sql/create-senior-contacts.sql` une fois.
+Les proches liés apparaissent automatiquement dans le répertoire du senior; celui-ci peut aussi rechercher ses contacts par nom, téléphone ou e-mail, ajouter des contacts personnels, modifier leurs coordonnées ou les supprimer après confirmation. Il peut lancer un appel ou un e-mail depuis son téléphone. Si `DB_SYNCHRONIZE=false`, exécutez `backend/sql/create-senior-contacts.sql` une fois.
 
 ### Tester le scénario complet
 
@@ -156,6 +156,8 @@ src/
 | GET     | `/api/family/seniors/:id/checkins` · `/alerts` | famille          | Historiques                              |
 | GET     | `/api/links/me/contacts`                       | senior           | Lister les contacts                      |
 | POST    | `/api/links/me/contacts`                       | senior           | Ajouter un contact                       |
+| PATCH   | `/api/links/me/contacts/:id`                   | senior           | Modifier un contact personnel            |
+| DELETE  | `/api/links/me/contacts/:id`                   | senior           | Supprimer un contact personnel           |
 | GET     | `/api/family/seniors/:id/photos`               | famille          | Lister les photos                        |
 | POST    | `/api/family/seniors/:id/photos`               | famille          | Ajouter une photo                        |
 | GET     | `/api/photos/me`                               | senior           | Consulter son album                      |

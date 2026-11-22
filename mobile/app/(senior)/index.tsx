@@ -2,10 +2,11 @@ import React, { useCallback, useState } from 'react';
 import { RefreshControl, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { Check, ChevronRight, CircleCheck, Images, Mic, Phone, Play } from 'lucide-react-native';
-import { Screen, AppText, Button, Card, ErrorText } from '../../src/components/ui';
+import { Screen, AppText, Button, ErrorText } from '../../src/components/ui';
 import { SosButton } from '../../src/features/senior/SosButton';
 import { SeniorActionButton } from '../../src/features/senior/SeniorActionButton';
 import { SeniorStatusPanel } from '../../src/features/senior/SeniorStatusPanel';
+import { SeniorActionConfirmation, SeniorConfirmationKind } from '../../src/features/senior/SeniorActionConfirmation';
 import { VoiceMessageRecorder } from '../../src/features/senior/VoiceMessageRecorder';
 import { CallContactPicker } from '../../src/features/senior/CallContactPicker';
 import { alertsApi, checkinsApi } from '../../src/api/endpoints';
@@ -26,6 +27,7 @@ export default function SeniorHome() {
   const { width } = useWindowDimensions();
   const [last, setLast] = useState<CheckIn | null>(null);
   const [activeAlert, setActiveAlert] = useState<Alert | null>(null);
+  const [confirmation, setConfirmation] = useState<SeniorConfirmationKind | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [voiceRecorderVisible, setVoiceRecorderVisible] = useState(false);
@@ -36,6 +38,7 @@ export default function SeniorHome() {
       const [c, a] = await Promise.all([checkinsApi.last(), alertsApi.myActive()]);
       setLast(c);
       setActiveAlert(a);
+      setConfirmation((current) => current === 'SOS' && !a ? null : current);
       setLoadError(null);
     } catch (error: unknown) {
       setLoadError(getErrorMessage(error));
@@ -49,16 +52,21 @@ export default function SeniorHome() {
 
   const sendCheckIn = useAsyncAction(async () => {
     setLast(await checkinsApi.create('OK'));
+    setConfirmation('OK');
   });
   const sendNotGreat = useAsyncAction(async () => {
     setLast(await checkinsApi.create('NOT_GREAT', 'Pas très en forme'));
+    setConfirmation('NOT_GREAT');
   });
   const triggerSos = useAsyncAction(async () => {
-    setActiveAlert(await alertsApi.create("J'ai besoin d'aide"));
+    const alert = await alertsApi.create("J'ai besoin d'aide");
+    setActiveAlert(alert);
+    setConfirmation('SOS');
   });
   const cancelSos = useAsyncAction(async (id: string) => {
     await alertsApi.resolve(id);
     setActiveAlert(null);
+    setConfirmation(null);
   });
 
   const firstName = user?.fullName.split(' ')[0];
@@ -125,13 +133,19 @@ export default function SeniorHome() {
         <AppText variant="title">Bonjour {firstName}</AppText>
 
         {activeAlert ? (
-          <Card tone="danger">
-            <AppText variant="title" color={colors.danger}>Votre famille a été prévenue</AppText>
-            <AppText>Alerte envoyée {timeAgo(activeAlert.createdAt)}. Restez où vous êtes, on s'occupe de vous.</AppText>
-            <Button variant="ghost" label="C'était une erreur : annuler" onPress={() => cancelSos.run(activeAlert.id)} loading={cancelSos.loading} />
-          </Card>
+          <SeniorActionConfirmation
+            kind="SOS"
+            onCancel={() => cancelSos.run(activeAlert.id)}
+            cancelLoading={cancelSos.loading}
+          />
         ) : (
           <>
+            {confirmation && (
+              <SeniorActionConfirmation
+                kind={confirmation}
+                onDismiss={() => setConfirmation(null)}
+              />
+            )}
             {actionRows.map((row, rowIndex) => (
               <View key={`actions-${rowIndex}`} style={columns > 1 ? styles.actionRow : undefined}>
                 {row.map(({ key, ...action }) => (
