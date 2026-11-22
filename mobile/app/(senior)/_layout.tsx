@@ -6,7 +6,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ContactRound, House, Images, Settings2, UserRound } from 'lucide-react-native';
 import { useAuth } from '../../src/context/AuthContext';
 import { useAppearance } from '../../src/context/AppearanceContext';
-import { font } from '../../src/theme';
 
 /** Garde : seuls les comptes SENIOR accèdent à cette interface. */
 export default function SeniorLayout() {
@@ -22,7 +21,9 @@ export default function SeniorLayout() {
         headerShown: false,
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.inkSoft,
-        tabBarLabelStyle: { fontSize: font.small - 2, fontWeight: '600' },
+        tabBarShowLabel: false,
+        tabBarItemStyle: { alignItems: 'center', justifyContent: 'center' },
+        tabBarIconStyle: { margin: 0, transform: [{ translateY: 12 }] },
         tabBarBackground: () => (
           <BlurView
             tint={mode === 'dark' ? 'dark' : 'light'}
@@ -44,8 +45,7 @@ export default function SeniorLayout() {
           height: 72,
           left: 12,
           overflow: 'hidden',
-          paddingTop: 6,
-          paddingBottom: 6,
+          paddingVertical: 0,
           position: 'absolute',
           right: 12,
           shadowColor: '#15252D',

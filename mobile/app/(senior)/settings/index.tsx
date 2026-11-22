@@ -32,6 +32,7 @@ export default function SettingsScreen() {
                             onValueChange={(enabled) => setMode(enabled ? 'dark' : 'light')}
                             trackColor={{ false: colors.line, true: colors.primary }}
                             thumbColor={colors.surface}
+                            style={styles.modeSwitch}
                         />
                     </View>
                 </Card>
@@ -73,6 +74,7 @@ const styles = StyleSheet.create({
     sectionTitle: { fontWeight: '700' },
     card: { paddingVertical: spacing.xs, paddingHorizontal: spacing.md },
     settingRow: { minHeight: 64, flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+    modeSwitch: { alignSelf: 'center', transform: [{ translateY: 4 }] },
     iconBox: { width: 40, height: 40, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
     settingLabel: { flex: 1, fontWeight: '600' },
     linkCopy: { flex: 1, gap: spacing.xs },
