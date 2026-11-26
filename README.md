@@ -104,7 +104,9 @@ Les proches liés apparaissent automatiquement dans le répertoire du senior; ce
 
 ### Profil du senior
 
-Le senior peut modifier son nom et son e-mail, remplacer sa photo de profil privée, changer son mot de passe en saisissant l'ancien, et supprimer définitivement son compte. La suppression efface dans une transaction le compte, ses pointages, alertes, liens, contacts, photos familiales et messages vocaux; les fichiers associés sont ensuite nettoyés du stockage. Si `DB_SYNCHRONIZE=false`, exécutez `backend/sql/create-user-profile-fields.sql` une fois.
+Le senior peut modifier son nom et son e-mail, ajouter/remplacer/supprimer sa photo de profil privée, changer son mot de passe en saisissant l'ancien, et supprimer définitivement son compte après confirmation par mot de passe. Les photos de profil acceptent JPEG, PNG et WebP jusqu'à 12 Mio; elles sont servies uniquement au senior connecté. En stockage local, elles vont dans `backend/uploads/profile-photos/` par défaut (`PROFILE_STORAGE_DIR` permet de changer le répertoire). Le stockage S3 partagé se configure avec `MEDIA_STORAGE_DRIVER=s3` et les variables `MEDIA_S3_*`.
+
+La suppression retire dans une transaction le compte senior, ses pointages, alertes, liens, contacts, photos familiales et messages vocaux. Le retrait des fichiers du stockage est ensuite tenté; tout échec est inscrit dans les journaux du backend. Avec `DB_SYNCHRONIZE=false`, exécutez une fois la migration depuis la racine du dépôt : `psql -U postgres -d seniorcare -f backend/sql/create-user-profile-fields.sql`.
 
 ### Rappel quotidien de pointage
 
@@ -133,7 +135,7 @@ src/
 ├── app.module.ts           Connexion PostgreSQL + assemblage des modules
 ├── common/                 Guards JWT/rôles, décorateurs (@CurrentUser, @Roles), enum Role
 ├── auth/                   Inscription, connexion, stratégie JWT
-├── users/                  Entité User (rôle SENIOR | FAMILY, code d'invitation)
+├── users/                  Comptes, profils seniors, authentification des modifications et photo privée
 ├── links/                  Rattachement famille ↔ senior (via code d'invitation)
 ├── checkins/               Pointages « Je vais bien » (côté senior)
 ├── alerts/                 Alertes d'urgence : création, clôture
@@ -194,7 +196,7 @@ src/
 ├── context/                AuthContext (session) et AppearanceContext (thème)
 ├── hooks/                  useRealtime (Socket.IO), useAsyncAction (loading/erreur)
 ├── components/ui/          Design system : Screen, AppText, Button, Card, Input, ErrorText
-├── features/senior|family/ Composants métier (CheckInButton, SosButton, SeniorCard…)
+├── features/senior|family|profile/ Composants métier du suivi, de la famille et de la gestion du profil
 ├── features/settings/      Gabarit partagé des pages d'information des réglages
 ├── theme.ts                Couleurs, tailles, espacements (seule source de style)
 └── config.ts · types.ts · utils/
