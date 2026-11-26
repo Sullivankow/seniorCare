@@ -1,12 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { Platform, Pressable, StyleSheet, Switch, View } from 'react-native';
+import { Modal, Platform, Pressable, StyleSheet, Switch, View } from 'react-native';
 import { router } from 'expo-router';
-import { BellRing, ChevronRight, Moon, Scale, ShieldCheck } from 'lucide-react-native';
-import { AppText, Card, ErrorText, Screen } from '../../../src/components/ui';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { BellRing, ChevronRight, Clock3, Moon, Scale, ShieldCheck } from 'lucide-react-native';
+import { AppText, Button, Card, ErrorText, Screen } from '../../../src/components/ui';
 import { checkinsApi } from '../../../src/api/endpoints';
 import { useAuth } from '../../../src/context/AuthContext';
 import { useAppearance } from '../../../src/context/AppearanceContext';
-import { configureCheckInReminder, isCheckInReminderEnabled } from '../../../src/services/checkInReminder';
+import {
+    configureCheckInReminder,
+    getCheckInReminderTime,
+    isCheckInReminderEnabled,
+    saveCheckInReminderTime,
+} from '../../../src/services/checkInReminder';
 import { getErrorMessage } from '../../../src/utils/errorMessage';
 import { spacing } from '../../../src/theme';
 
@@ -15,18 +21,37 @@ const informationPages = [
     { title: 'Mentions légales', subtitle: 'Éditeur et hébergement', href: '/settings/legal', Icon: Scale },
 ] as const;
 
+function dateFromTime(time: string) {
+    const [hour, minute] = time.split(':').map(Number);
+    const date = new Date();
+    date.setHours(hour, minute, 0, 0);
+    return date;
+}
+
+function timeFromDate(date: Date) {
+    return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+}
+
 export default function SettingsScreen() {
     const { mode, setMode, colors } = useAppearance();
     const { user } = useAuth();
     const [reminderEnabled, setReminderEnabled] = useState(false);
+    const [reminderTime, setReminderTime] = useState('20:00');
     const [reminderLoading, setReminderLoading] = useState(true);
     const [reminderError, setReminderError] = useState<string | null>(null);
+    const [timePickerVisible, setTimePickerVisible] = useState(false);
+    const [timePickerDate, setTimePickerDate] = useState(() => dateFromTime('20:00'));
 
     useEffect(() => {
         let isCurrent = true;
         if (!user) return () => { isCurrent = false; };
-        void isCheckInReminderEnabled(user.id)
-            .then((enabled) => { if (isCurrent) setReminderEnabled(enabled); })
+        void Promise.all([isCheckInReminderEnabled(user.id), getCheckInReminderTime(user.id)])
+            .then(([enabled, time]) => {
+                if (!isCurrent) return;
+                setReminderEnabled(enabled);
+                setReminderTime(time);
+                setTimePickerDate(dateFromTime(time));
+            })
             .catch((error: unknown) => { if (isCurrent) setReminderError(getErrorMessage(error)); })
             .finally(() => { if (isCurrent) setReminderLoading(false); });
         return () => { isCurrent = false; };
@@ -48,6 +73,32 @@ export default function SettingsScreen() {
         } finally {
             setReminderLoading(false);
         }
+    };
+
+    const saveReminderTime = async (date: Date) => {
+        if (!user) return;
+        setReminderLoading(true);
+        setReminderError(null);
+        const time = timeFromDate(date);
+        try {
+            const lastCheckIn = reminderEnabled ? await checkinsApi.last() : null;
+            await saveCheckInReminderTime(user.id, time, lastCheckIn?.createdAt ?? null);
+            setReminderTime(time);
+        } catch (error: unknown) {
+            setReminderError(getErrorMessage(error));
+        } finally {
+            setReminderLoading(false);
+            setTimePickerVisible(false);
+        }
+    };
+
+    const handleTimeChange = (event: { type: string }, selectedDate?: Date) => {
+        if (Platform.OS === 'android') {
+            setTimePickerVisible(false);
+            if (event.type === 'set' && selectedDate) void saveReminderTime(selectedDate);
+            return;
+        }
+        if (selectedDate) setTimePickerDate(selectedDate);
     };
 
     return (
@@ -84,7 +135,7 @@ export default function SettingsScreen() {
                             </View>
                             <View style={styles.linkCopy}>
                                 <AppText style={styles.settingLabel}>Rappel quotidien</AppText>
-                                <AppText variant="small" color={colors.inkSoft}>À 20 h si vous n’avez pas pointé</AppText>
+                                <AppText variant="small" color={colors.inkSoft}>À {reminderTime} si vous n’avez pas pointé</AppText>
                             </View>
                             <Switch
                                 accessibilityLabel="Activer le rappel quotidien de pointage"
@@ -95,8 +146,60 @@ export default function SettingsScreen() {
                                 thumbColor={colors.surface}
                             />
                         </View>
+                        <Pressable
+                            accessibilityRole="button"
+                            accessibilityLabel={`Choisir l’heure du rappel, ${reminderTime}`}
+                            disabled={reminderLoading || !user}
+                            onPress={() => {
+                                setTimePickerDate(dateFromTime(reminderTime));
+                                setTimePickerVisible(true);
+                            }}
+                            style={({ pressed }) => [
+                                styles.settingRow,
+                                styles.dividedRow,
+                                { borderTopColor: colors.line },
+                                pressed && styles.pressed,
+                            ]}
+                        >
+                            <View style={[styles.iconBox, { backgroundColor: colors.primarySoft }]}>
+                                <Clock3 size={22} color={colors.primary} />
+                            </View>
+                            <AppText style={styles.settingLabel}>Heure du rappel</AppText>
+                            <AppText style={{ color: colors.primary, fontWeight: '700' }}>{reminderTime}</AppText>
+                            <ChevronRight size={20} color={colors.inkSoft} />
+                        </Pressable>
                     </Card>
                     <ErrorText message={reminderError} />
+                    {timePickerVisible && Platform.OS === 'android' && (
+                        <DateTimePicker
+                            value={timePickerDate}
+                            mode="time"
+                            display="default"
+                            onChange={handleTimeChange}
+                        />
+                    )}
+                    <Modal
+                        visible={timePickerVisible && Platform.OS === 'ios'}
+                        transparent
+                        animationType="fade"
+                        onRequestClose={() => setTimePickerVisible(false)}
+                    >
+                        <View style={styles.modalOverlay}>
+                            <View style={[styles.timePickerDialog, { backgroundColor: colors.surface }]}>
+                                <AppText variant="title">Heure du rappel</AppText>
+                                <DateTimePicker
+                                    value={timePickerDate}
+                                    mode="time"
+                                    display="spinner"
+                                    onChange={handleTimeChange}
+                                />
+                                <View style={styles.pickerActions}>
+                                    <Button label="Annuler" variant="ghost" onPress={() => setTimePickerVisible(false)} />
+                                    <Button label="Enregistrer" onPress={() => { void saveReminderTime(timePickerDate); }} />
+                                </View>
+                            </View>
+                        </View>
+                    </Modal>
                 </View>
             )}
 
@@ -142,4 +245,7 @@ const styles = StyleSheet.create({
     linkCopy: { flex: 1, gap: spacing.xs },
     dividedRow: { borderTopWidth: 1, paddingTop: spacing.sm, marginTop: spacing.xs },
     pressed: { opacity: 0.7 },
+    modalOverlay: { flex: 1, justifyContent: 'center', padding: spacing.lg, backgroundColor: 'rgba(0, 0, 0, 0.45)' },
+    timePickerDialog: { borderRadius: 8, padding: spacing.md, gap: spacing.sm },
+    pickerActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: spacing.sm },
 });

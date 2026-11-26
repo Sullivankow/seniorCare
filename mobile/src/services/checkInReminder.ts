@@ -2,7 +2,7 @@ import * as Notifications from "expo-notifications";
 import * as SecureStore from "expo-secure-store";
 import { Platform } from "react-native";
 
-const REMINDER_HOUR = 20;
+const DEFAULT_REMINDER_TIME = "20:00";
 const SCHEDULE_DAYS = 30;
 const REMINDER_TYPE = "checkin-reminder";
 
@@ -17,6 +17,17 @@ Notifications.setNotificationHandler({
 
 function preferenceKey(userId: string) {
   return `seniorcare.checkin-reminder.${userId}`;
+}
+
+function timePreferenceKey(userId: string) {
+  return `seniorcare.checkin-reminder-time.${userId}`;
+}
+
+export async function getCheckInReminderTime(userId: string) {
+  const storedTime = await SecureStore.getItemAsync(timePreferenceKey(userId));
+  return storedTime && /^(?:[01]\d|2[0-3]):[0-5]\d$/.test(storedTime)
+    ? storedTime
+    : DEFAULT_REMINDER_TIME;
 }
 
 function localDateKey(date: Date) {
@@ -61,6 +72,9 @@ export async function syncCheckInReminders(
   )
     return;
 
+  const [hour, minute] = (await getCheckInReminderTime(userId))
+    .split(":")
+    .map(Number);
   const scheduled = await Notifications.getAllScheduledNotificationsAsync();
   const existingByDate = new Map<string, string>();
   const duplicateIds: string[] = [];
@@ -84,7 +98,8 @@ export async function syncCheckInReminders(
   for (let offset = 0; offset < SCHEDULE_DAYS; offset += 1) {
     const reminderAt = new Date(now);
     reminderAt.setDate(now.getDate() + offset);
-    reminderAt.setHours(REMINDER_HOUR, 0, 0, 0);
+    reminderAt.setHours(hour, minute, 0, 0);
+
     const dateKey = localDateKey(reminderAt);
     if (reminderAt <= now || dateKey === checkedInDateKey) continue;
     desiredDates.set(dateKey, reminderAt);
@@ -122,6 +137,29 @@ export async function syncCheckInReminders(
 export async function isCheckInReminderEnabled(userId: string) {
   if (Platform.OS === "web") return false;
   return (await SecureStore.getItemAsync(preferenceKey(userId))) === "enabled";
+}
+
+export async function saveCheckInReminderTime(
+  userId: string,
+  time: string,
+  lastCheckInAt: string | null,
+) {
+  if (!/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(time)) {
+    throw new Error("Heure de rappel invalide.");
+  }
+
+  const previousTime = await getCheckInReminderTime(userId);
+  await SecureStore.setItemAsync(timePreferenceKey(userId), time);
+  if (!(await isCheckInReminderEnabled(userId))) return;
+
+  try {
+    await cancelUserReminders(userId);
+    await syncCheckInReminders(userId, lastCheckInAt);
+  } catch (error) {
+    await SecureStore.setItemAsync(timePreferenceKey(userId), previousTime);
+    await syncCheckInReminders(userId, lastCheckInAt).catch(() => undefined);
+    throw error;
+  }
 }
 
 /** Renvoie false si les notifications ne sont pas autorisées ou disponibles. */

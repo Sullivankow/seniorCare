@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@react-native-community/datetimepicker": "9.2.1",
     "expo": "^58.0.0",
     "expo-audio": "~58.0.11",
     "expo-blur": "~58.0.6",

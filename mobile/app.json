@@ -22,7 +22,8 @@
           "microphonePermission": "SeniorCare utilise le microphone pour enregistrer vos messages vocaux.",
           "enableBackgroundRecording": false
         }
-      ]
+      ],
+      "@react-native-community/datetimepicker"
     ]
   }
 }
