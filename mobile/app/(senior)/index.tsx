@@ -19,6 +19,7 @@ import { Alert, CheckIn } from '../../src/types';
 import { useAppearance } from '../../src/context/AppearanceContext';
 import { spacing } from '../../src/theme';
 import { getErrorMessage } from '../../src/utils/errorMessage';
+import { syncCheckInReminders } from '../../src/services/checkInReminder';
 
 /** Tableau de bord senior : actions principales et urgence accessibles en un toucher. */
 export default function SeniorHome() {
@@ -38,12 +39,13 @@ export default function SeniorHome() {
       const [c, a] = await Promise.all([checkinsApi.last(), alertsApi.myActive()]);
       setLast(c);
       setActiveAlert(a);
+      if (user?.id) void syncCheckInReminders(user.id, c?.createdAt ?? null).catch(() => undefined);
       setConfirmation((current) => current === 'SOS' && !a ? null : current);
       setLoadError(null);
     } catch (error: unknown) {
       setLoadError(getErrorMessage(error));
     }
-  }, []);
+  }, [user?.id]);
 
   useFocusEffect(useCallback(() => { void load(); }, [load]));
 
@@ -51,11 +53,15 @@ export default function SeniorHome() {
   useRealtime({ [RealtimeEvents.ALERT_RESOLVED]: () => load() });
 
   const sendCheckIn = useAsyncAction(async () => {
-    setLast(await checkinsApi.create('OK'));
+    const checkIn = await checkinsApi.create('OK');
+    setLast(checkIn);
+    if (user?.id) void syncCheckInReminders(user.id, checkIn.createdAt).catch(() => undefined);
     setConfirmation('OK');
   });
   const sendNotGreat = useAsyncAction(async () => {
-    setLast(await checkinsApi.create('NOT_GREAT', 'Pas très en forme'));
+    const checkIn = await checkinsApi.create('NOT_GREAT', 'Pas très en forme');
+    setLast(checkIn);
+    if (user?.id) void syncCheckInReminders(user.id, checkIn.createdAt).catch(() => undefined);
     setConfirmation('NOT_GREAT');
   });
   const triggerSos = useAsyncAction(async () => {

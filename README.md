@@ -17,7 +17,7 @@ Application de veille bienveillante entre des seniors et leur famille.
 - **Comptes et accès** : inscription en tant que senior ou membre de la famille, connexion par e-mail et mot de passe, déconnexion et restauration de la session au redémarrage de l'app.
 - **Rôle senior** : code d'invitation unique à 6 caractères, pointage « Je vais bien » ou « Pas très en forme », affichage du dernier pointage et bouton SOS déclenché par un appui long de 1,5 seconde. Le senior peut annuler une alerte active.
 - **Navigation et apparence** : barre d'onglets flottante avec fond flouté, accès à l'accueil, aux photos, aux contacts, aux réglages et au profil. Le mode clair/sombre est mémorisé sur l'appareil.
-- **Réglages** : activation du mode sombre, rubrique confidentialité et mentions légales. Les coordonnées de l'éditeur, l'hébergement, les durées de conservation et les modalités d'exercice des droits restent à renseigner avant publication.
+- **Réglages** : activation du mode sombre et du rappel quotidien de pointage (notification locale à 20 h), rubrique confidentialité et mentions légales. Les coordonnées de l'éditeur, l'hébergement, les durées de conservation et les modalités d'exercice des droits restent à renseigner avant publication.
 - **Profil et répertoire du senior** : consultation de son nom, de son e-mail et de son code d'invitation; liste des proches liés, recherche par nom/téléphone/e-mail, ajout, modification et suppression de contacts personnels avec téléphone et e-mail. Les actions « Appeler » et « Envoyer un e-mail » ouvrent l'application correspondante du téléphone.
 - **Rôle famille** : rattachement à un senior avec son code, tableau de bord des seniors suivis, état du jour et dernière nouvelle, historique chronologique des pointages et alertes, messages vocaux reçus et clôture d'une urgence.
 - **Album photo familial** : envoi de photos et de petits mots par les proches, onglets « Photo du jour », « Toutes » et « Souvenirs », grille responsive virtualisée sur la vue du senior, photo surprise du jour, cœur du senior et lecture vocale des messages. L'API renvoie au plus les 100 photos les plus récentes.
@@ -35,9 +35,9 @@ Application de veille bienveillante entre des seniors et leur famille.
 ### Pas encore implémenté ou à terminer
 
 - Notifications push lorsque l'app famille est fermée.
-- Rappel automatique si un senior n'a pas fait son pointage à une heure définie.
+- Rappel push distant à la famille si le senior n'a pas pointé.
 - Collecte et envoi de la position GPS depuis l'app lors d'un SOS (l'API accepte déjà des coordonnées facultatives).
-- Fuseau horaire et heure de rappel configurables par utilisateur.
+- Heure du rappel configurable; le rappel actuel suit le fuseau horaire du téléphone et est fixé à 20 h.
 - Récupération de mot de passe et suppression de compte. Le profil est consultable, mais sa modification n'est pas encore implémentée.
 - Compléter les mentions légales et la politique de confidentialité avec les informations vérifiées de l'éditeur avant toute publication.
 - Migrations de base de données, tests automatisés, intégration continue et déploiement de production.
@@ -101,6 +101,10 @@ Les fichiers sont stockés localement dans `backend/uploads/family-photos/` par 
 ### Répertoire du senior
 
 Les proches liés apparaissent automatiquement dans le répertoire du senior; celui-ci peut aussi rechercher ses contacts par nom, téléphone ou e-mail, ajouter des contacts personnels, modifier leurs coordonnées ou les supprimer après confirmation. Il peut lancer un appel ou un e-mail depuis son téléphone. Si `DB_SYNCHRONIZE=false`, exécutez `backend/sql/create-senior-contacts.sql` une fois.
+
+### Rappel quotidien de pointage
+
+Le senior peut activer ou désactiver le rappel dans **Paramètres → Pointage**. Une notification locale est programmée à 20 h les jours où aucun pointage n'est enregistré; un pointage réussi retire celle du jour. Le réglage et les notifications sont propres au compte sur cet appareil. L'app maintient un horizon de 30 jours, renouvelé à son ouverture, sans requête réseau périodique ni tâche serveur. L'autorisation de notifications doit être accordée sur le téléphone. Ce mécanisme ne constitue pas une notification push distante.
 
 ### Tester le scénario complet
 

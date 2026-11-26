@@ -1,9 +1,13 @@
-import React from 'react';
-import { Pressable, StyleSheet, Switch, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Platform, Pressable, StyleSheet, Switch, View } from 'react-native';
 import { router } from 'expo-router';
-import { ChevronRight, Moon, Scale, ShieldCheck } from 'lucide-react-native';
-import { AppText, Card, Screen } from '../../../src/components/ui';
+import { BellRing, ChevronRight, Moon, Scale, ShieldCheck } from 'lucide-react-native';
+import { AppText, Card, ErrorText, Screen } from '../../../src/components/ui';
+import { checkinsApi } from '../../../src/api/endpoints';
+import { useAuth } from '../../../src/context/AuthContext';
 import { useAppearance } from '../../../src/context/AppearanceContext';
+import { configureCheckInReminder, isCheckInReminderEnabled } from '../../../src/services/checkInReminder';
+import { getErrorMessage } from '../../../src/utils/errorMessage';
 import { spacing } from '../../../src/theme';
 
 const informationPages = [
@@ -13,6 +17,38 @@ const informationPages = [
 
 export default function SettingsScreen() {
     const { mode, setMode, colors } = useAppearance();
+    const { user } = useAuth();
+    const [reminderEnabled, setReminderEnabled] = useState(false);
+    const [reminderLoading, setReminderLoading] = useState(true);
+    const [reminderError, setReminderError] = useState<string | null>(null);
+
+    useEffect(() => {
+        let isCurrent = true;
+        if (!user) return () => { isCurrent = false; };
+        void isCheckInReminderEnabled(user.id)
+            .then((enabled) => { if (isCurrent) setReminderEnabled(enabled); })
+            .catch((error: unknown) => { if (isCurrent) setReminderError(getErrorMessage(error)); })
+            .finally(() => { if (isCurrent) setReminderLoading(false); });
+        return () => { isCurrent = false; };
+    }, [user]);
+
+    const changeReminder = async (enabled: boolean) => {
+        if (!user) return;
+        setReminderLoading(true);
+        setReminderError(null);
+        try {
+            const lastCheckIn = enabled ? await checkinsApi.last() : null;
+            const configured = await configureCheckInReminder(user.id, enabled, lastCheckIn?.createdAt ?? null);
+            if (enabled && !configured) {
+                setReminderError('Autorisez les notifications dans les réglages du téléphone pour activer le rappel.');
+            }
+            setReminderEnabled(configured);
+        } catch (error: unknown) {
+            setReminderError(getErrorMessage(error));
+        } finally {
+            setReminderLoading(false);
+        }
+    };
 
     return (
         <Screen reserveTabBarSpace>
@@ -37,6 +73,32 @@ export default function SettingsScreen() {
                     </View>
                 </Card>
             </View>
+
+            {Platform.OS !== 'web' && (
+                <View style={styles.section}>
+                    <AppText variant="small" color={colors.inkSoft} style={styles.sectionTitle}>POINTAGE</AppText>
+                    <Card style={styles.card}>
+                        <View style={styles.settingRow}>
+                            <View style={[styles.iconBox, { backgroundColor: colors.primarySoft }]}>
+                                <BellRing size={22} color={colors.primary} />
+                            </View>
+                            <View style={styles.linkCopy}>
+                                <AppText style={styles.settingLabel}>Rappel quotidien</AppText>
+                                <AppText variant="small" color={colors.inkSoft}>À 20 h si vous n’avez pas pointé</AppText>
+                            </View>
+                            <Switch
+                                accessibilityLabel="Activer le rappel quotidien de pointage"
+                                value={reminderEnabled}
+                                disabled={reminderLoading || !user}
+                                onValueChange={(enabled) => { void changeReminder(enabled); }}
+                                trackColor={{ false: colors.line, true: colors.primary }}
+                                thumbColor={colors.surface}
+                            />
+                        </View>
+                    </Card>
+                    <ErrorText message={reminderError} />
+                </View>
+            )}
 
             <View style={styles.section}>
                 <AppText variant="small" color={colors.inkSoft} style={styles.sectionTitle}>INFORMATIONS</AppText>
