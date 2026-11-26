@@ -10,6 +10,8 @@ export interface User {
   role: Role;
   /** Présent uniquement pour les seniors : code à donner à la famille. */
   inviteCode?: string | null;
+  /** Version de cache du portrait privé, null si aucune photo n'est définie. */
+  profilePhotoUpdatedAt?: string | null;
 }
 
 export interface DirectoryContact {

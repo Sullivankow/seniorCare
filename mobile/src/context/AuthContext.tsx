@@ -12,6 +12,7 @@ interface AuthContextValue {
   loading: boolean;
   signIn: (session: AuthResponse) => Promise<void>;
   signOut: () => Promise<void>;
+  updateUser: (user: User) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -55,7 +56,17 @@ export function AuthProvider({ children }: { readonly children: React.ReactNode 
     await SecureStore.deleteItemAsync(STORAGE_KEY);
   }, []);
 
-  const value = useMemo(() => ({ user, token, loading, signIn, signOut }), [user, token, loading, signIn, signOut]);
+  const updateUser = useCallback(async (updatedUser: User) => {
+    setUser(updatedUser);
+    if (token) {
+      await SecureStore.setItemAsync(
+        STORAGE_KEY,
+        JSON.stringify({ accessToken: token, user: updatedUser }),
+      );
+    }
+  }, [token]);
+
+  const value = useMemo(() => ({ user, token, loading, signIn, signOut, updateUser }), [user, token, loading, signIn, signOut, updateUser]);
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 

@@ -18,7 +18,7 @@ Application de veille bienveillante entre des seniors et leur famille.
 - **Rôle senior** : code d'invitation unique à 6 caractères, pointage « Je vais bien » ou « Pas très en forme », affichage du dernier pointage et bouton SOS déclenché par un appui long de 1,5 seconde. Le senior peut annuler une alerte active.
 - **Navigation et apparence** : barre d'onglets flottante avec fond flouté, accès à l'accueil, aux photos, aux contacts, aux réglages et au profil. Le mode clair/sombre est mémorisé sur l'appareil.
 - **Réglages** : activation du mode sombre et du rappel quotidien de pointage (heure configurable), rubrique confidentialité et mentions légales. Les coordonnées de l'éditeur, l'hébergement, les durées de conservation et les modalités d'exercice des droits restent à renseigner avant publication.
-- **Profil et répertoire du senior** : consultation de son nom, de son e-mail et de son code d'invitation; liste des proches liés, recherche par nom/téléphone/e-mail, ajout, modification et suppression de contacts personnels avec téléphone et e-mail. Les actions « Appeler » et « Envoyer un e-mail » ouvrent l'application correspondante du téléphone.
+- **Profil et répertoire du senior** : modification du nom et de l'e-mail, changement du mot de passe avec vérification de l'ancien, ajout/remplacement/suppression d'une photo privée et suppression du compte avec confirmation. La récupération « mot de passe oublié » reste à implémenter. Le senior peut aussi gérer ses contacts personnels et contacter ses proches depuis le répertoire.
 - **Rôle famille** : rattachement à un senior avec son code, tableau de bord des seniors suivis, état du jour et dernière nouvelle, historique chronologique des pointages et alertes, messages vocaux reçus et clôture d'une urgence.
 - **Album photo familial** : envoi de photos et de petits mots par les proches, onglets « Photo du jour », « Toutes » et « Souvenirs », grille responsive virtualisée sur la vue du senior, photo surprise du jour, cœur du senior et lecture vocale des messages. L'API renvoie au plus les 100 photos les plus récentes.
 - **Alertes et temps réel** : une alerte active à la fois par senior; les pointages, nouvelles alertes et clôtures sont transmis aux appareils connectés concernés via Socket.IO. Le tableau de bord affiche une alerte urgente immédiatement.
@@ -38,7 +38,7 @@ Application de veille bienveillante entre des seniors et leur famille.
 - Rappel push distant à la famille si le senior n'a pas pointé.
 - Collecte et envoi de la position GPS depuis l'app lors d'un SOS (l'API accepte déjà des coordonnées facultatives).
 - Fuseau horaire configurable séparément; le rappel suit actuellement celui du téléphone.
-- Récupération de mot de passe et suppression de compte. Le profil est consultable, mais sa modification n'est pas encore implémentée.
+- Récupération de mot de passe par e-mail (le changement de mot de passe depuis le profil est disponible).
 - Compléter les mentions légales et la politique de confidentialité avec les informations vérifiées de l'éditeur avant toute publication.
 - Migrations de base de données, tests automatisés, intégration continue et déploiement de production.
 
@@ -102,6 +102,10 @@ Les fichiers sont stockés localement dans `backend/uploads/family-photos/` par 
 
 Les proches liés apparaissent automatiquement dans le répertoire du senior; celui-ci peut aussi rechercher ses contacts par nom, téléphone ou e-mail, ajouter des contacts personnels, modifier leurs coordonnées ou les supprimer après confirmation. Il peut lancer un appel ou un e-mail depuis son téléphone. Si `DB_SYNCHRONIZE=false`, exécutez `backend/sql/create-senior-contacts.sql` une fois.
 
+### Profil du senior
+
+Le senior peut modifier son nom et son e-mail, remplacer sa photo de profil privée, changer son mot de passe en saisissant l'ancien, et supprimer définitivement son compte. La suppression efface dans une transaction le compte, ses pointages, alertes, liens, contacts, photos familiales et messages vocaux; les fichiers associés sont ensuite nettoyés du stockage. Si `DB_SYNCHRONIZE=false`, exécutez `backend/sql/create-user-profile-fields.sql` une fois.
+
 ### Rappel quotidien de pointage
 
 Le senior peut activer ou désactiver le rappel et choisir son heure dans **Paramètres → Pointage** (20 h par défaut). Une notification locale est programmée à l'heure choisie les jours où aucun pointage n'est enregistré; un pointage réussi retire celle du jour. Le réglage et les notifications sont propres au compte sur cet appareil. L'app maintient un horizon de 30 jours, renouvelé à son ouverture, sans requête réseau périodique ni tâche serveur. L'autorisation de notifications doit être accordée sur le téléphone. Ce mécanisme ne constitue pas une notification push distante.
@@ -146,31 +150,35 @@ src/
 
 ### Principales routes (détail et essais dans Swagger)
 
-| Méthode | Route                                          | Rôle             | Description                              |
-| ------- | ---------------------------------------------- | ---------------- | ---------------------------------------- |
-| POST    | `/api/auth/register` · `/api/auth/login`       | public           | Compte / connexion                       |
-| GET     | `/api/users/me`                                | connecté         | Profil du compte connecté                |
-| POST    | `/api/checkins`                                | senior           | « Je vais bien » / « Pas très en forme » |
-| GET     | `/api/checkins/me/last`                        | senior           | Dernier pointage                         |
-| POST    | `/api/alerts`                                  | senior           | Déclencher une urgence                   |
-| GET     | `/api/alerts/me/active`                        | senior           | Alerte active                            |
-| POST    | `/api/alerts/:id/resolve`                      | senior / famille | Clôturer une alerte                      |
-| POST    | `/api/family/seniors`                          | famille          | Suivre un senior (code)                  |
-| GET     | `/api/family/seniors`                          | famille          | Tableau de bord                          |
-| GET     | `/api/family/seniors/:id/checkins` · `/alerts` | famille          | Historiques                              |
-| GET     | `/api/links/me/contacts`                       | senior           | Lister les contacts                      |
-| POST    | `/api/links/me/contacts`                       | senior           | Ajouter un contact                       |
-| PATCH   | `/api/links/me/contacts/:id`                   | senior           | Modifier un contact personnel            |
-| DELETE  | `/api/links/me/contacts/:id`                   | senior           | Supprimer un contact personnel           |
-| GET     | `/api/family/seniors/:id/photos`               | famille          | Lister les photos                        |
-| POST    | `/api/family/seniors/:id/photos`               | famille          | Ajouter une photo                        |
-| GET     | `/api/photos/me`                               | senior           | Consulter son album                      |
-| GET     | `/api/photos/:id/image`                        | senior / famille | Lire une photo autorisée                 |
-| PUT     | `/api/photos/:id/like`                         | senior           | Aimer une photo                          |
-| DELETE  | `/api/photos/:id/like`                         | senior           | Retirer sa réaction                      |
-| POST    | `/api/voice-messages`                          | senior           | Envoyer un message vocal                 |
-| GET     | `/api/family/seniors/:id/voice-messages`       | famille          | Lister les 50 derniers messages vocaux   |
-| GET     | `/api/voice-messages/:id/audio`                | senior / famille | Lire un message vocal autorisé           |
+| Méthode | Route                                                    | Rôle             | Description                              |
+| ------- | -------------------------------------------------------- | ---------------- | ---------------------------------------- |
+| POST    | `/api/auth/register` · `/api/auth/login`                 | public           | Compte / connexion                       |
+| GET     | `/api/users/me`                                          | connecté         | Profil du compte connecté                |
+| PUT     | `/api/users/me`                                          | senior           | Modifier son nom et son e-mail           |
+| POST    | `/api/users/me/password`                                 | senior           | Changer le mot de passe                  |
+| POST    | `/api/users/me/photo` · `GET/DELETE /api/users/me/photo` | senior           | Gérer et lire sa photo privée            |
+| DELETE  | `/api/users/me`                                          | senior           | Supprimer son compte et ses données      |
+| POST    | `/api/checkins`                                          | senior           | « Je vais bien » / « Pas très en forme » |
+| GET     | `/api/checkins/me/last`                                  | senior           | Dernier pointage                         |
+| POST    | `/api/alerts`                                            | senior           | Déclencher une urgence                   |
+| GET     | `/api/alerts/me/active`                                  | senior           | Alerte active                            |
+| POST    | `/api/alerts/:id/resolve`                                | senior / famille | Clôturer une alerte                      |
+| POST    | `/api/family/seniors`                                    | famille          | Suivre un senior (code)                  |
+| GET     | `/api/family/seniors`                                    | famille          | Tableau de bord                          |
+| GET     | `/api/family/seniors/:id/checkins` · `/alerts`           | famille          | Historiques                              |
+| GET     | `/api/links/me/contacts`                                 | senior           | Lister les contacts                      |
+| POST    | `/api/links/me/contacts`                                 | senior           | Ajouter un contact                       |
+| PATCH   | `/api/links/me/contacts/:id`                             | senior           | Modifier un contact personnel            |
+| DELETE  | `/api/links/me/contacts/:id`                             | senior           | Supprimer un contact personnel           |
+| GET     | `/api/family/seniors/:id/photos`                         | famille          | Lister les photos                        |
+| POST    | `/api/family/seniors/:id/photos`                         | famille          | Ajouter une photo                        |
+| GET     | `/api/photos/me`                                         | senior           | Consulter son album                      |
+| GET     | `/api/photos/:id/image`                                  | senior / famille | Lire une photo autorisée                 |
+| PUT     | `/api/photos/:id/like`                                   | senior           | Aimer une photo                          |
+| DELETE  | `/api/photos/:id/like`                                   | senior           | Retirer sa réaction                      |
+| POST    | `/api/voice-messages`                                    | senior           | Envoyer un message vocal                 |
+| GET     | `/api/family/seniors/:id/voice-messages`                 | famille          | Lister les 50 derniers messages vocaux   |
+| GET     | `/api/voice-messages/:id/audio`                          | senior / famille | Lire un message vocal autorisé           |
 
 ### Mobile (`mobile/`)
 

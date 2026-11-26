@@ -9,6 +9,7 @@ import {
   FamilyPhoto,
   Role,
   SeniorSummary,
+  User,
   VoiceMessage,
 } from "../types";
 
@@ -23,6 +24,27 @@ export const authApi = {
   }) => request<AuthResponse>("POST", "/auth/register", data),
   login: (data: { email: string; password: string }) =>
     request<AuthResponse>("POST", "/auth/login", data),
+};
+
+/** Profil privé du compte connecté; l'image reste protégée par le JWT. */
+export const userApi = {
+  updateProfile: (data: { fullName: string; email: string }) =>
+    request<User>("PUT", "/users/me", data),
+  changePassword: (data: { currentPassword: string; newPassword: string }) =>
+    request<{ changed: boolean }>("POST", "/users/me/password", data),
+  uploadProfilePhoto: (file: {
+    uri: string;
+    name: string;
+    type: string;
+    blob?: Blob;
+  }) => uploadFile<User>("/users/me/photo", file, {}, "photo"),
+  removeProfilePhoto: () => request<User>("DELETE", "/users/me/photo"),
+  deleteProfile: (currentPassword: string) =>
+    request<{ deleted: boolean }>("DELETE", "/users/me", { currentPassword }),
+  profilePhotoUrl: (updatedAt?: string | null) => {
+    const url = `${API_URL}/users/me/photo`;
+    return updatedAt ? `${url}?v=${encodeURIComponent(updatedAt)}` : url;
+  },
 };
 
 /** Côté SENIOR */

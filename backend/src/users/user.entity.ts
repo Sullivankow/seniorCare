@@ -1,12 +1,17 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from 'typeorm';
-import { Role } from '../common/role.enum';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+} from "typeorm";
+import { Role } from "../common/role.enum";
 
-@Entity('users')
+@Entity("users")
 export class User {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn("uuid")
   id: string;
 
-  @Column({ type: 'enum', enum: Role })
+  @Column({ type: "enum", enum: Role })
   role: Role;
 
   @Column()
@@ -23,8 +28,17 @@ export class User {
    * Code d'invitation (seniors uniquement). Le senior le donne à sa famille,
    * qui le saisit dans son app pour se rattacher à lui.
    */
-  @Column({ type: 'varchar', unique: true, nullable: true })
+  @Column({ type: "varchar", unique: true, nullable: true })
   inviteCode: string | null;
+
+  @Column({ type: "varchar", length: 255, nullable: true, select: false })
+  profilePhotoKey: string | null;
+
+  @Column({ type: "varchar", length: 50, nullable: true, select: false })
+  profilePhotoMimeType: string | null;
+
+  @Column({ type: "timestamptz", nullable: true })
+  profilePhotoUpdatedAt: Date | null;
 
   @CreateDateColumn()
   createdAt: Date;
