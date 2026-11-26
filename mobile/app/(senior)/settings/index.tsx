@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Modal, Platform, Pressable, StyleSheet, Switch, View } from 'react-native';
 import { router } from 'expo-router';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { BellRing, ChevronRight, Clock3, Moon, Scale, ShieldCheck } from 'lucide-react-native';
+import { BellRing, ChevronRight, Clock3, Info, Moon, Scale, ShieldCheck } from 'lucide-react-native';
 import { AppText, Button, Card, ErrorText, Screen } from '../../../src/components/ui';
 import { checkinsApi } from '../../../src/api/endpoints';
 import { useAuth } from '../../../src/context/AuthContext';
@@ -17,6 +17,7 @@ import { getErrorMessage } from '../../../src/utils/errorMessage';
 import { spacing } from '../../../src/theme';
 
 const informationPages = [
+    { title: 'À propos', subtitle: 'Version et application', href: '/settings/about', Icon: Info },
     { title: 'Confidentialité', subtitle: 'Données et vie privée', href: '/settings/privacy', Icon: ShieldCheck },
     { title: 'Mentions légales', subtitle: 'Éditeur et hébergement', href: '/settings/legal', Icon: Scale },
 ] as const;
