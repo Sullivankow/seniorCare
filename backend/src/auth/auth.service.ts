@@ -10,6 +10,10 @@ import { User } from "../users/user.entity";
 import { RegisterDto } from "./dto/register.dto";
 import { LoginDto } from "./dto/login.dto";
 
+// Incrémenter ces versions lorsque le contenu des documents juridiques change.
+const TERMS_VERSION = "1.0";
+const PRIVACY_POLICY_VERSION = "1.0";
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -22,11 +26,16 @@ export class AuthService {
       throw new ConflictException("Un compte existe déjà avec cet e-mail.");
     }
     const passwordHash = await bcrypt.hash(dto.password, 10);
+    const consentedAt = new Date();
     const user = await this.users.create({
       fullName: dto.fullName,
       email: dto.email,
       passwordHash,
       role: dto.role,
+      termsAcceptedAt: consentedAt,
+      termsVersion: TERMS_VERSION,
+      privacyPolicyAcceptedAt: consentedAt,
+      privacyPolicyVersion: PRIVACY_POLICY_VERSION,
     });
     return this.buildResponse(user);
   }

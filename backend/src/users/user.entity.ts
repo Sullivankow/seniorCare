@@ -40,6 +40,18 @@ export class User {
   @Column({ type: "timestamptz", nullable: true })
   profilePhotoUpdatedAt: Date | null;
 
+  @Column({ type: "timestamptz", nullable: true })
+  termsAcceptedAt: Date | null;
+
+  @Column({ type: "varchar", length: 32, nullable: true })
+  termsVersion: string | null;
+
+  @Column({ type: "timestamptz", nullable: true })
+  privacyPolicyAcceptedAt: Date | null;
+
+  @Column({ type: "varchar", length: 32, nullable: true })
+  privacyPolicyVersion: string | null;
+
   @CreateDateColumn()
   createdAt: Date;
 }

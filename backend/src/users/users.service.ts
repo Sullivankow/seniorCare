@@ -270,6 +270,10 @@ export class UsersService {
     email: string;
     passwordHash: string;
     role: Role;
+    termsAcceptedAt: Date;
+    termsVersion: string;
+    privacyPolicyAcceptedAt: Date;
+    privacyPolicyVersion: string;
   }) {
     const user = this.repo.create({
       ...data,

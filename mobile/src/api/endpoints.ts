@@ -21,6 +21,8 @@ export const authApi = {
     email: string;
     password: string;
     role: Role;
+    termsAccepted: boolean;
+    privacyPolicyAccepted: boolean;
   }) => request<AuthResponse>("POST", "/auth/register", data),
   login: (data: { email: string; password: string }) =>
     request<AuthResponse>("POST", "/auth/login", data),

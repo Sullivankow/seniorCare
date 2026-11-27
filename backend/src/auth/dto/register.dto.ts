@@ -1,18 +1,25 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsEnum, IsString, MinLength } from 'class-validator';
-import { Role } from '../../common/role.enum';
+import { ApiProperty } from "@nestjs/swagger";
+import {
+  Equals,
+  IsBoolean,
+  IsEmail,
+  IsEnum,
+  IsString,
+  MinLength,
+} from "class-validator";
+import { Role } from "../../common/role.enum";
 
 export class RegisterDto {
-  @ApiProperty({ example: 'Jeanne Martin' })
+  @ApiProperty({ example: "Jeanne Martin" })
   @IsString()
   @MinLength(2)
   fullName: string;
 
-  @ApiProperty({ example: 'jeanne@example.com' })
+  @ApiProperty({ example: "jeanne@example.com" })
   @IsEmail()
   email: string;
 
-  @ApiProperty({ example: 'motdepasse123', minLength: 6 })
+  @ApiProperty({ example: "motdepasse123", minLength: 6 })
   @IsString()
   @MinLength(6)
   password: string;
@@ -20,4 +27,20 @@ export class RegisterDto {
   @ApiProperty({ enum: Role, example: Role.SENIOR })
   @IsEnum(Role)
   role: Role;
+
+  @ApiProperty({
+    example: true,
+    description: "Acceptation obligatoire des conditions d’utilisation.",
+  })
+  @IsBoolean()
+  @Equals(true)
+  termsAccepted: boolean;
+
+  @ApiProperty({
+    example: true,
+    description: "Acceptation obligatoire de la politique de confidentialité.",
+  })
+  @IsBoolean()
+  @Equals(true)
+  privacyPolicyAccepted: boolean;
 }
