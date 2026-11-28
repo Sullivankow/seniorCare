@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Modal, StyleSheet, View } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import {
   AudioModule,
   RecordingPresets,
@@ -142,55 +143,58 @@ export function VoiceMessageRecorder({ visible, onClose, onMessageSent }: Props)
 
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={() => { void close(); }}>
-      <Screen fixed>
-        <View style={styles.header}>
-          <View style={styles.heading}>
-            <AppText variant="small" color={colors.seniorOk}>MESSAGE À VOTRE FAMILLE</AppText>
-            <AppText variant="title">Message vocal</AppText>
+      <SafeAreaProvider style={styles.safeAreaProvider}>
+        <Screen fixed>
+          <View style={styles.header}>
+            <View style={styles.heading}>
+              <AppText variant="small" color={colors.seniorOk}>MESSAGE À VOTRE FAMILLE</AppText>
+              <AppText variant="title">Message vocal</AppText>
+            </View>
+            <Button label="Fermer" variant="ghost" onPress={() => { void close(); }} disabled={saving} />
           </View>
-          <Button label="Fermer" variant="ghost" onPress={() => { void close(); }} disabled={saving} />
-        </View>
 
-        <View style={styles.body}>
-          {recorderState.isRecording && (
-            <>
-              <View style={[styles.micIcon, { backgroundColor: colors.seniorPurple }]}><Mic size={40} color={colors.white} /></View>
-              <AppText variant="huge" center>{formatDuration(durationSeconds)}</AppText>
-              <AppText center>Enregistrement en cours</AppText>
-              <Button label="Arrêter l’enregistrement" variant="danger" onPress={() => { void stopRecording(); }} />
-            </>
-          )}
-          {!recorderState.isRecording && Boolean(recordingUri) && (
-            <>
-              <AppText center>Écoutez votre message avant de l’envoyer.</AppText>
-              <AppText variant="title" center>{formatDuration(durationSeconds)}</AppText>
-              <Button
-                label={playerState.playing ? 'Mettre en pause' : 'Écouter le message'}
-                variant="success"
-                onPress={() => { playerState.playing ? player.pause() : player.play(); }}
-              />
-              <Button label="Recommencer" variant="ghost" onPress={discardRecording} disabled={saving} />
-              <Button label="Envoyer à ma famille" onPress={() => { void sendRecording(); }} loading={saving} />
-            </>
-          )}
-          {!recorderState.isRecording && !recordingUri && (
-            <>
-              <View style={[styles.micIcon, { backgroundColor: colors.seniorPurple }]}><Mic size={40} color={colors.white} /></View>
-              <AppText center>Appuyez pour enregistrer un message de 60 secondes maximum.</AppText>
-              <Button label="Commencer l’enregistrement" variant="success" onPress={() => { void startRecording(); }} />
-            </>
-          )}
-          <ErrorText message={error} />
-        </View>
-        <AppText variant="small" center>
-          Votre message est envoyé uniquement aux proches reliés à votre compte.
-        </AppText>
-      </Screen>
+          <View style={styles.body}>
+            {recorderState.isRecording && (
+              <>
+                <View style={[styles.micIcon, { backgroundColor: colors.seniorPurple }]}><Mic size={40} color={colors.white} /></View>
+                <AppText variant="huge" center>{formatDuration(durationSeconds)}</AppText>
+                <AppText center>Enregistrement en cours</AppText>
+                <Button label="Arrêter l’enregistrement" variant="danger" onPress={() => { void stopRecording(); }} />
+              </>
+            )}
+            {!recorderState.isRecording && Boolean(recordingUri) && (
+              <>
+                <AppText center>Écoutez votre message avant de l’envoyer.</AppText>
+                <AppText variant="title" center>{formatDuration(durationSeconds)}</AppText>
+                <Button
+                  label={playerState.playing ? 'Mettre en pause' : 'Écouter le message'}
+                  variant="success"
+                  onPress={() => { playerState.playing ? player.pause() : player.play(); }}
+                />
+                <Button label="Recommencer" variant="ghost" onPress={discardRecording} disabled={saving} />
+                <Button label="Envoyer à ma famille" onPress={() => { void sendRecording(); }} loading={saving} />
+              </>
+            )}
+            {!recorderState.isRecording && !recordingUri && (
+              <>
+                <View style={[styles.micIcon, { backgroundColor: colors.seniorPurple }]}><Mic size={40} color={colors.white} /></View>
+                <AppText center>Appuyez pour enregistrer un message de 60 secondes maximum.</AppText>
+                <Button label="Commencer l’enregistrement" variant="success" onPress={() => { void startRecording(); }} />
+              </>
+            )}
+            <ErrorText message={error} />
+          </View>
+          <AppText variant="small" center>
+            Votre message est envoyé uniquement aux proches reliés à votre compte.
+          </AppText>
+        </Screen>
+      </SafeAreaProvider>
     </Modal>
   );
 }
 
 const styles = StyleSheet.create({
+  safeAreaProvider: { flex: 1 },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: spacing.md },
   heading: { flex: 1, gap: spacing.xs },
   body: { flex: 1, justifyContent: 'center', gap: spacing.md },
