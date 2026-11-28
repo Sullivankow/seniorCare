@@ -112,6 +112,10 @@ La suppression retire dans une transaction le compte senior, ses pointages, aler
 
 Le senior peut activer ou désactiver le rappel et choisir son heure dans **Paramètres → Pointage** (20 h par défaut). Une notification locale est programmée à l'heure choisie les jours où aucun pointage n'est enregistré; un pointage réussi retire celle du jour. Le réglage et les notifications sont propres au compte sur cet appareil. L'app maintient un horizon de 30 jours, renouvelé à son ouverture, sans requête réseau périodique ni tâche serveur. L'autorisation de notifications doit être accordée sur le téléphone. Ce mécanisme ne constitue pas une notification push distante.
 
+### Accessibilité
+
+Dans **Paramètres → Accessibilité**, le senior peut choisir une taille de texte standard, grande ou très grande. Le réglage est appliqué globalement aux libellés, commandes et champs de saisie, puis conservé localement sur l’appareil.
+
 ### Tester le scénario complet
 
 1. Sur un premier appareil (ou l'émulateur) : **créer un compte « senior »** → un **code à 6 caractères** s'affiche.

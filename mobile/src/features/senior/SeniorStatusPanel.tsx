@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { AppText } from '../../components/ui';
 import { useAppearance } from '../../context/AppearanceContext';
+import { useAccessibility } from '../../context/AccessibilityContext';
 import { font, radius, spacing } from '../../theme';
 
 function formatDate(date: Date) {
@@ -11,6 +12,7 @@ function formatDate(date: Date) {
 
 export function SeniorStatusPanel() {
     const { colors } = useAppearance();
+    const { textScale } = useAccessibility();
     const [now, setNow] = useState(() => new Date());
 
     useEffect(() => {
@@ -21,7 +23,7 @@ export function SeniorStatusPanel() {
     return (
         <View style={[styles.panel, { backgroundColor: colors.seniorPanel, borderColor: colors.seniorLine }]}>
             <AppText color={colors.white} style={styles.date}>{formatDate(now)}</AppText>
-            <AppText color={colors.white} style={styles.time}>
+            <AppText color={colors.white} style={[styles.time, { fontSize: (font.huge + 8) * textScale, lineHeight: (font.huge + 12) * textScale }]}>
                 {now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
             </AppText>
             <View style={styles.footer}>
@@ -39,6 +41,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     date: { alignSelf: 'flex-start' },
-    time: { fontSize: font.huge + 8, lineHeight: font.huge + 12, fontWeight: '800', letterSpacing: 3 },
+    time: { fontWeight: '800', letterSpacing: 3 },
     footer: { borderTopColor: 'rgba(255, 255, 255, 0.32)', borderTopWidth: 1, marginTop: spacing.sm, paddingTop: spacing.sm, width: '100%' },
 });

@@ -2,11 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { Modal, Platform, Pressable, StyleSheet, Switch, View } from 'react-native';
 import { router } from 'expo-router';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { BellRing, ChevronRight, Clock3, Info, Moon, Scale, ShieldCheck } from 'lucide-react-native';
+import { BellRing, ChevronRight, Clock3, Info, Moon, Scale, ShieldCheck, Type } from 'lucide-react-native';
 import { AppText, Button, Card, ErrorText, Screen } from '../../../src/components/ui';
 import { checkinsApi } from '../../../src/api/endpoints';
 import { useAuth } from '../../../src/context/AuthContext';
 import { useAppearance } from '../../../src/context/AppearanceContext';
+import { TextSize, useAccessibility } from '../../../src/context/AccessibilityContext';
 import {
     configureCheckInReminder,
     getCheckInReminderTime,
@@ -22,6 +23,12 @@ const informationPages = [
     { title: 'Mentions légales', subtitle: 'Éditeur et hébergement', href: '/settings/legal', Icon: Scale },
 ] as const;
 
+const textSizeOptions: { value: TextSize; label: string }[] = [
+    { value: 'standard', label: 'Standard' },
+    { value: 'large', label: 'Grand' },
+    { value: 'extraLarge', label: 'Très grand' },
+];
+
 function dateFromTime(time: string) {
     const [hour, minute] = time.split(':').map(Number);
     const date = new Date();
@@ -35,6 +42,7 @@ function timeFromDate(date: Date) {
 
 export default function SettingsScreen() {
     const { mode, setMode, colors } = useAppearance();
+    const { textSize, setTextSize } = useAccessibility();
     const { user } = useAuth();
     const [reminderEnabled, setReminderEnabled] = useState(false);
     const [reminderTime, setReminderTime] = useState('20:00');
@@ -122,6 +130,42 @@ export default function SettingsScreen() {
                             thumbColor={colors.surface}
                             style={styles.modeSwitch}
                         />
+                    </View>
+                </Card>
+            </View>
+
+            <View style={styles.section}>
+                <AppText variant="small" color={colors.inkSoft} style={styles.sectionTitle}>ACCESSIBILITÉ</AppText>
+                <Card style={styles.card}>
+                    <View style={styles.settingRow}>
+                        <View style={[styles.iconBox, { backgroundColor: colors.primarySoft }]}>
+                            <Type size={22} color={colors.primary} />
+                        </View>
+                        <View style={styles.linkCopy}>
+                            <AppText style={styles.settingLabel}>Taille du texte</AppText>
+                            <AppText variant="small" color={colors.inkSoft}>S’applique dans toute l’application</AppText>
+                        </View>
+                    </View>
+                    <View style={styles.textSizeOptions}>
+                        {textSizeOptions.map(({ value, label }) => {
+                            const selected = textSize === value;
+                            return (
+                                <Pressable
+                                    key={value}
+                                    accessibilityRole="radio"
+                                    accessibilityLabel={`Taille du texte : ${label}`}
+                                    accessibilityState={{ checked: selected }}
+                                    onPress={() => setTextSize(value)}
+                                    style={({ pressed }) => [
+                                        styles.textSizeOption,
+                                        { backgroundColor: selected ? colors.primary : colors.surface, borderColor: selected ? colors.primary : colors.line },
+                                        pressed && styles.pressed,
+                                    ]}
+                                >
+                                    <AppText variant="small" color={colors.ink} center>{label}</AppText>
+                                </Pressable>
+                            );
+                        })}
                     </View>
                 </Card>
             </View>
@@ -240,6 +284,8 @@ const styles = StyleSheet.create({
     sectionTitle: { fontWeight: '700' },
     card: { paddingVertical: spacing.xs, paddingHorizontal: spacing.md },
     settingRow: { minHeight: 64, flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+    textSizeOptions: { flexDirection: 'row', gap: spacing.xs, paddingVertical: spacing.sm },
+    textSizeOption: { flex: 1, minHeight: 52, borderWidth: 1, borderRadius: 8, alignItems: 'center', justifyContent: 'center', paddingHorizontal: spacing.xs },
     modeSwitch: { alignSelf: 'center', transform: [{ translateY: 4 }] },
     iconBox: { width: 40, height: 40, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
     settingLabel: { flex: 1, fontWeight: '600' },

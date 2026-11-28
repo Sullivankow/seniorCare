@@ -1,6 +1,7 @@
 import React from 'react';
 import { ActivityIndicator, Pressable, StyleSheet } from 'react-native';
 import { useAppearance } from '../../context/AppearanceContext';
+import { useAccessibility } from '../../context/AccessibilityContext';
 import { font, radius } from '../../theme';
 import { AppText } from './AppText';
 
@@ -17,6 +18,7 @@ interface Props {
 /** Bouton standard : hauteur ≥ 56 pt pour rester facile à toucher. */
 export function Button({ label, onPress, variant = 'primary', loading, disabled }: Props) {
   const { colors } = useAppearance();
+  const { textScale } = useAccessibility();
   const palette: Record<Variant, { bg: string; fg: string; border?: string }> = {
     primary: { bg: colors.primary, fg: colors.white },
     success: { bg: colors.ok, fg: colors.white },
@@ -42,7 +44,7 @@ export function Button({ label, onPress, variant = 'primary', loading, disabled 
       {loading ? (
         <ActivityIndicator color={p.fg} />
       ) : (
-        <AppText color={p.fg} style={{ fontWeight: '700', fontSize: font.body, textAlign: 'center' }}>
+        <AppText color={p.fg} style={{ fontWeight: '700', fontSize: font.body * textScale, textAlign: 'center' }}>
           {label}
         </AppText>
       )}

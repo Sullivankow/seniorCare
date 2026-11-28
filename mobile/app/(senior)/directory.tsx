@@ -6,6 +6,7 @@ import { AppText, Button, Card, ErrorText, Input, Screen } from '../../src/compo
 import { directoryApi } from '../../src/api/endpoints';
 import { DirectoryContact } from '../../src/types';
 import { useAppearance } from '../../src/context/AppearanceContext';
+import { useAccessibility } from '../../src/context/AccessibilityContext';
 import { font, spacing } from '../../src/theme';
 import { getErrorMessage } from '../../src/utils/errorMessage';
 
@@ -202,6 +203,7 @@ interface DirectoryToolbarProps {
 
 function DirectoryToolbar({ search, onSearchChange, countLabel, formOpen, onToggleForm }: DirectoryToolbarProps): React.JSX.Element {
     const { colors } = useAppearance();
+    const { textScale } = useAccessibility();
     const addButtonBackground = formOpen ? colors.surface : colors.primary;
     const addButtonBorder = formOpen ? colors.line : colors.primary;
 
@@ -217,7 +219,7 @@ function DirectoryToolbar({ search, onSearchChange, countLabel, formOpen, onTogg
                         value={search}
                         onChangeText={onSearchChange}
                         returnKeyType="search"
-                        style={[styles.searchInput, { color: colors.ink }]}
+                        style={[styles.searchInput, { color: colors.ink, fontSize: font.body * textScale }]}
                     />
                 </View>
                 <Pressable
@@ -388,7 +390,7 @@ function IconAction({ icon, label, onPress, destructive, disabled }: { readonly 
 const styles = StyleSheet.create({
     searchRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
     searchField: { flex: 1, minHeight: 56, flexDirection: 'row', alignItems: 'center', gap: spacing.sm, borderWidth: 2, borderRadius: 8, paddingHorizontal: spacing.md },
-    searchInput: { flex: 1, minWidth: 0, minHeight: 52, fontSize: font.body },
+    searchInput: { flex: 1, minWidth: 0, minHeight: 52 },
     addButton: { width: 56, height: 56, borderWidth: 2, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
     contactTitleRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
     contactName: { flex: 1 },

@@ -2,6 +2,7 @@ import React from 'react';
 import { ActivityIndicator, Pressable, StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
 import { AppText } from '../../components/ui';
 import { useAppearance } from '../../context/AppearanceContext';
+import { useAccessibility } from '../../context/AccessibilityContext';
 import { font, radius, spacing } from '../../theme';
 
 interface Props {
@@ -18,6 +19,7 @@ interface Props {
 
 export function SeniorActionButton({ title, subtitle, icon, color, onPress, loading, trailing, accessibilityLabel, style }: Props) {
     const { colors } = useAppearance();
+    const { textScale } = useAccessibility();
     let trailingContent: React.ReactNode = null;
     if (loading) trailingContent = <ActivityIndicator color={colors.white} />;
     else if (trailing) trailingContent = trailing;
@@ -37,8 +39,8 @@ export function SeniorActionButton({ title, subtitle, icon, color, onPress, load
                 {trailingContent}
             </View>
             <View style={styles.copy}>
-                <AppText color={colors.white} style={styles.title}>{title}</AppText>
-                <AppText color={colors.white} style={styles.subtitle}>{subtitle}</AppText>
+                <AppText color={colors.white} style={[styles.title, { fontSize: (font.action - 2) * textScale, lineHeight: (font.action - 2) * textScale * 1.2 }]}>{title}</AppText>
+                <AppText color={colors.white} style={[styles.subtitle, { fontSize: font.small * textScale, lineHeight: font.small * textScale * 1.3 }]}>{subtitle}</AppText>
             </View>
         </Pressable>
     );
@@ -63,6 +65,6 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     copy: { gap: spacing.xs },
-    title: { fontSize: font.action - 2, lineHeight: (font.action - 2) * 1.2, fontWeight: '700' },
-    subtitle: { fontSize: font.small, lineHeight: font.small * 1.3, opacity: 0.9 },
+    title: { fontWeight: '700' },
+    subtitle: { opacity: 0.9 },
 });
