@@ -62,6 +62,9 @@ export interface Alert {
   seniorId: string;
   status: AlertStatus;
   message?: string | null;
+  /** Coordonnées ponctuelles, présentes uniquement si le senior a autorisé le GPS lors du SOS. */
+  latitude?: number | null;
+  longitude?: number | null;
   createdAt: string;
   resolvedAt?: string | null;
 }

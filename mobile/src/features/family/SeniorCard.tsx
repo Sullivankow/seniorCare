@@ -4,6 +4,7 @@ import { SeniorSummary } from '../../types';
 import { useAppearance } from '../../context/AppearanceContext';
 import { timeAgo } from '../../utils/time';
 import { AppText, Button, Card } from '../../components/ui';
+import { AlertLocationButton } from './AlertLocationButton';
 
 interface Props {
   readonly summary: SeniorSummary;
@@ -54,6 +55,7 @@ export function SeniorCard({ summary, onOpen, onResolveAlert, style }: Props) {
         {title}
       </AppText>
       <AppText variant="small">{detail}</AppText>
+      {activeAlert && <AlertLocationButton alert={activeAlert} />}
       {activeAlert && <Button variant="danger" label="Marquer comme traitée" onPress={() => onResolveAlert(activeAlert.id)} />}
       <Button variant="ghost" label="Voir l'historique" onPress={onOpen} />
     </Card>

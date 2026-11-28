@@ -57,7 +57,10 @@ export const checkinsApi = {
 };
 
 export const alertsApi = {
-  create: (message?: string) => request<Alert>("POST", "/alerts", { message }),
+  create: (
+    message?: string,
+    coordinates?: { latitude: number; longitude: number },
+  ) => request<Alert>("POST", "/alerts", { message, ...coordinates }),
   myActive: () => request<Alert | null>("GET", "/alerts/me/active"),
   resolve: (id: string) => request<Alert>("POST", `/alerts/${id}/resolve`),
 };

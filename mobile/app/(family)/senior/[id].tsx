@@ -12,6 +12,7 @@ import { useAppearance } from '../../../src/context/AppearanceContext';
 import { radius } from '../../../src/theme';
 import { getErrorMessage } from '../../../src/utils/errorMessage';
 import { VoiceMessageList } from '../../../src/features/family/VoiceMessageList';
+import { AlertLocationButton } from '../../../src/features/family/AlertLocationButton';
 
 /** Une ligne de la chronologie : pointage ou alerte, triés par date. */
 type Entry =
@@ -176,6 +177,7 @@ export default function SeniorHistoryScreen() {
             <AppText variant="small">
               {formatDateTime(e.at)} · {e.data.status === 'ACTIVE' ? 'en cours' : 'traitée'}
             </AppText>
+            <AlertLocationButton alert={e.data} />
           </Card>
         ) : (
           <SwipeToDelete

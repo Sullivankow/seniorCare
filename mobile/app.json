@@ -23,6 +23,12 @@
           "enableBackgroundRecording": false
         }
       ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "SeniorCare utilise votre position au moment d'un SOS afin de la transmettre à vos proches."
+        }
+      ],
       "@react-native-community/datetimepicker"
     ]
   }

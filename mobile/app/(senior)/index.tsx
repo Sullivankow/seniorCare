@@ -20,6 +20,7 @@ import { useAppearance } from '../../src/context/AppearanceContext';
 import { spacing } from '../../src/theme';
 import { getErrorMessage } from '../../src/utils/errorMessage';
 import { syncCheckInReminders } from '../../src/services/checkInReminder';
+import { getSosCoordinates } from '../../src/services/sosLocation';
 
 /** Tableau de bord senior : actions principales et urgence accessibles en un toucher. */
 export default function SeniorHome() {
@@ -65,7 +66,8 @@ export default function SeniorHome() {
     setConfirmation('NOT_GREAT');
   });
   const triggerSos = useAsyncAction(async () => {
-    const alert = await alertsApi.create("J'ai besoin d'aide");
+    const coordinates = await getSosCoordinates();
+    const alert = await alertsApi.create("J'ai besoin d'aide", coordinates ?? undefined);
     setActiveAlert(alert);
     setConfirmation('SOS');
   });

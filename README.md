@@ -119,6 +119,8 @@ Le senior peut activer ou désactiver le rappel et choisir son heure dans **Para
 3. Le senior appuie sur **Je vais bien** : la carte du proche passe au vert **instantanément**.
 4. Le senior **maintient URGENCE** 1,5 s : le proche reçoit une pop-up et la carte passe au rouge. Le proche peut « Marquer comme traitée ».
 
+Au déclenchement du SOS, l’application demande l’autorisation de localisation au premier plan. Si elle est accordée et qu’une position est disponible sous 8 secondes, ses coordonnées sont jointes à l’alerte et les proches peuvent ouvrir la carte depuis le tableau de bord ou l’historique. En cas de refus, d’indisponibilité du GPS ou de délai dépassé, l’alerte est tout de même envoyée sans position. Aucune localisation n’est demandée au lancement ni suivie en arrière-plan. Après modification de la configuration du plugin, reconstruisez les applications natives de production ou de développement.
+
 Astuce : vous pouvez aussi jouer le rôle d'un des deux avec Swagger (`POST /api/checkins`) pour voir le temps réel sur le téléphone.
 
 ---
@@ -212,11 +214,10 @@ Interface senior pensée pour l'accessibilité : texte 18 pt et plus, fort contr
 
 1. **Notifications push** quand l'app famille est fermée (`expo-notifications`). Attention : les push distants ne fonctionnent plus dans Expo Go sur Android, il faudra un _development build_ (`eas build`).
 2. **Rappel automatique** : tâche planifiée (`@nestjs/schedule`) qui prévient la famille si le senior n'a pas pointé avant une heure donnée (le champ `checkedInToday` est déjà calculé).
-3. **Géolocalisation** au moment du SOS (`expo-location`) : l'API accepte déjà `latitude`/`longitude`.
-4. **Migrations TypeORM** à la place de `DB_SYNCHRONIZE=true` avant la mise en production.
-5. Fuseau horaire par utilisateur, heure de rappel personnalisée.
-6. SMS de secours.
-7. Tests (Jest côté API, jest-expo côté mobile), CI, déploiement (Docker + Postgres managé).
+3. **Migrations TypeORM** à la place de `DB_SYNCHRONIZE=true` avant la mise en production.
+4. Fuseau horaire par utilisateur, heure de rappel personnalisée.
+5. SMS de secours.
+6. Tests (Jest côté API, jest-expo côté mobile), CI, déploiement (Docker + Postgres managé).
 
 ## 4. Sécurité : à faire avant la production
 
